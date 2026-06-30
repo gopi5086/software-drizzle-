@@ -1,0 +1,93 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@layer base {
+  body {
+    @apply bg-background text-deep-charcoal antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-[rgba(255,255,255,0.7)] backdrop-blur-md border border-[rgba(0,0,0,0.08)] transition-all duration-200;
+  }
+  
+  .glass-card:hover {
+    @apply -translate-y-0.5 shadow-xl shadow-primary/5;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 10px;
+}
+
+/* ── Print Styles: show only the invoice, one page ── */
+@media print {
+  aside,
+  header,
+  nav,
+  form,
+  button,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Hide the form container card */
+  .glass-card {
+    display: none !important;
+  }
+
+  /* Reset grid layout columns to show invoice full width */
+  .grid {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Ensure the preview section container occupies full width and doesn't scroll */
+  section {
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #unified-invoice {
+    max-width: 100% !important;
+    width: 210mm !important;
+    height: auto !important;
+    max-height: 296mm !important;
+    box-shadow: none !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    position: relative !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    margin: 0;
+    size: A4 portrait;
+  }
+}
