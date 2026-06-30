@@ -24,25 +24,12 @@ interface Reservation {
   advance: number;
   status: string;
   created_at: string;
+  stay_cosy_amount?: number;
+  check_in_time?: string;
+  check_out_time?: string;
 }
 
-const fmt = (d: string) => {
-  if (!d) return '--';
-  const baseDate = d.includes('T') ? d.split('T')[0] : d;
-  const dateObj = new Date(baseDate + 'T00:00:00');
-  if (isNaN(dateObj.getTime())) return '--';
-  return dateObj.toLocaleDateString('en-GB', {
-    day: 'numeric', month: 'short', year: '2-digit'
-  }).replace(/ /g, '-');
-};
 
-const nights = (ci: string, co: string) => {
-  if (!ci || !co) return 1;
-  const baseCi = ci.includes('T') ? ci.split('T')[0] : ci;
-  const baseCo = co.includes('T') ? co.split('T')[0] : co;
-  const diff = new Date(baseCo + 'T00:00:00').getTime() - new Date(baseCi + 'T00:00:00').getTime();
-  return Math.max(1, Math.ceil(diff / 86400000));
-};
 
 const BookingInvoicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -132,8 +119,12 @@ const BookingInvoicePage: React.FC = () => {
             <ArrowLeft className="w-5 h-5 text-primary" />
           </button>
           <div>
-            <h2 className="text-xl font-black text-primary tracking-tight">Invoice {invoiceNo}</h2>
-            <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">{res.guest_name} · {res.room_type} · {n} Night{n !== 1 ? 's' : ''}</p>
+            <h2 className="text-xl font-black text-primary tracking-tight">
+              Invoice {'DDI-' + String(res.id).padStart(4, '0')}
+            </h2>
+            <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">
+              {res.guest_name} · {res.room_type}
+            </p>
           </div>
         </div>
         <div className="flex gap-3">

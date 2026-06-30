@@ -137,7 +137,7 @@ const ReservationReceipt: React.FC<ReservationReceiptProps> = ({ data }) => {
             <div style={{ flex: 1 }}>
               {data.rooms && data.rooms.length > 0 ? (
                 data.rooms.map((room, idx) => (
-                  <div key={idx} style={{ marginBottom: '4px', borderBottom: idx < data.rooms.length - 1 ? '1px dotted #eee' : 'none', paddingBottom: '4px' }}>
+                  <div key={idx} style={{ marginBottom: '4px', borderBottom: idx < data.rooms!.length - 1 ? '1px dotted #eee' : 'none', paddingBottom: '4px' }}>
                     <p style={{ margin: 0, fontSize: '13px', fontWeight: 'bold' }}>{room.count} x {room.type} @ ₹{room.rate}</p>
                   </div>
                 ))
@@ -149,14 +149,14 @@ const ReservationReceipt: React.FC<ReservationReceiptProps> = ({ data }) => {
           </div>
 
           {/* Extra Charges */}
-          {(data.earlyCheckinAmount > 0 || data.lateCheckoutAmount > 0 || data.specialRequirementsAmount > 0) && (
+          {((data.earlyCheckinAmount || 0) > 0 || (data.lateCheckoutAmount || 0) > 0 || (data.specialRequirementsAmount || 0) > 0) && (
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '40px', marginTop: '10px' }}>
               <span style={{ fontSize: '13px', fontWeight: 'bold', minWidth: '120px' }}>Extra Charges:</span>
               <div style={{ flex: 1 }}>
-                {data.earlyCheckinAmount > 0 && <p style={{ margin: '0 0 2px', fontSize: '12px' }}>Early Check-in: ₹{data.earlyCheckinAmount}</p>}
-                {data.lateCheckoutAmount > 0 && <p style={{ margin: '0 0 2px', fontSize: '12px' }}>Late Check-out: ₹{data.lateCheckoutAmount}</p>}
-                {data.stayCosyAmount > 0 && <p style={{ margin: '0 0 2px', fontSize: '12px' }}>Stay Cosy: ₹{data.stayCosyAmount}</p>}
-                {data.specialRequirementsAmount > 0 && (
+                {(data.earlyCheckinAmount || 0) > 0 && <p style={{ margin: '0 0 2px', fontSize: '12px' }}>Early Check-in: ₹{data.earlyCheckinAmount}</p>}
+                {(data.lateCheckoutAmount || 0) > 0 && <p style={{ margin: '0 0 2px', fontSize: '12px' }}>Late Check-out: ₹{data.lateCheckoutAmount}</p>}
+                {(data.stayCosyAmount || 0) > 0 && <p style={{ margin: '0 0 2px', fontSize: '12px' }}>Stay Cosy: ₹{data.stayCosyAmount}</p>}
+                {(data.specialRequirementsAmount || 0) > 0 && (
                   <div style={{ margin: '0 0 2px' }}>
                     <p style={{ margin: 0, fontSize: '12px' }}>Special Requirements: ₹{data.specialRequirementsAmount}</p>
                     <p style={{ margin: 0, fontSize: '10px', color: '#666', fontStyle: 'italic' }}>({data.specialRequirements})</p>

@@ -14,7 +14,7 @@ import {
 import { toast } from 'sonner';
 import Modal from '../components/Modal';
 import api from '../api/axios';
-import { exportToCSV, formatDate } from '../utils/export';
+import { exportToCSV, exportToPDF, formatDate } from '../utils/export';
 import UnifiedInvoice, { type UnifiedInvoiceData } from '../components/UnifiedInvoice';
 
 interface Invoice {

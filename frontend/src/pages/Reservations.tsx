@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Plus,
   Calendar,
@@ -8,14 +8,12 @@ import {
   CheckCircle,
   Mail,
   Printer,
-  Download,
   X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import api from '../api/axios';
 import ReservationReceipt, { type ReceiptData } from '../components/ReservationReceipt';
-import Modal from '../components/Modal';
 
 interface Reservation {
   id: number;

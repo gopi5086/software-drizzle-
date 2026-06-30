@@ -54,6 +54,7 @@ const CreateReservationPage: React.FC = () => {
     earlyCheckinAmount: 0,
     lateCheckoutAmount: 0,
     stayCosyAmount: 0,
+    totalTariff: 0,
     address: '',
     idProof: '',
     checkInTime: '12:00 Noon',
