@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  // Hardcoded fallback because Vercel env vars are tricky
+  baseURL: import.meta.env.VITE_API_URL || 'https://dazzle-drop-hotel.onrender.com/api',
 });
 
 // Add a request interceptor to include auth token
