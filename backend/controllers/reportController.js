@@ -223,3 +223,91 @@ exports.getReportsData = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getStaffRecordReport = async (req, res) => {
+  try {
+    const { id: userId, role } = req.user;
+    const selectedStaffId = req.query.staff_id;
+
+    let targetStaffId = userId;
+    if (role === 'admin' && selectedStaffId && selectedStaffId !== 'all') {
+      targetStaffId = Number(selectedStaffId);
+    }
+
+    const isAll = role === 'admin' && selectedStaffId === 'all';
+
+    let [staffUserRows] = await pool.query(
+      'SELECT id, full_name, email, role, phone FROM users WHERE id = ?',
+      [targetStaffId]
+    );
+
+    let currentStaff = staffUserRows[0] || { id: userId, full_name: 'Staff Member', role, email: '' };
+
+    let [allStaff] = await pool.query(
+      "SELECT id, full_name, email, role FROM users WHERE role IN ('staff', 'admin') ORDER BY full_name ASC"
+    );
+
+    const whereClause = isAll ? '' : 'WHERE created_by = ?';
+    const queryParams = isAll ? [] : [targetStaffId];
+
+    const [enquiries] = await pool.query(
+      `SELECT e.*, u.full_name AS creator_name 
+       FROM enquiries e 
+       LEFT JOIN users u ON e.created_by = u.id 
+       ${whereClause} 
+       ORDER BY e.created_at DESC`,
+      queryParams
+    );
+
+    const [reservations] = await pool.query(
+      `SELECT r.*, u.full_name AS creator_name 
+       FROM reservations r 
+       LEFT JOIN users u ON r.created_by = u.id 
+       ${whereClause} 
+       ORDER BY r.created_at DESC`,
+      queryParams
+    );
+
+    const visibleEnquiries = enquiries.filter(e => !e.reservation_id && e.status !== 'Converted');
+
+    const totalEnquiries = visibleEnquiries.length;
+    const totalReservations = reservations.length;
+    const legacyConvertedEnquiries = enquiries.filter(e => e.status === 'Converted' && !e.reservation_id).length;
+    const totalAttended = totalEnquiries + totalReservations;
+    const totalConverted = totalReservations + legacyConvertedEnquiries;
+    const pendingEnquiries = visibleEnquiries.filter(e => e.status === 'Pending').length;
+    const cancelledCount = visibleEnquiries.filter(e => e.status === 'Cancelled').length;
+
+    const totalRevenue = reservations.reduce((acc, r) => acc + Number(r.total_tariff || 0), 0);
+    const conversionRate = totalAttended > 0 ? Math.round((totalConverted / totalAttended) * 100) : 0;
+
+    // Combine for record log without repeating the same enquiry once it is converted to a reservation
+    const combinedRecords = [
+      ...visibleEnquiries.map(e => ({ ...e, isEnquiryOnly: true })),
+      ...reservations.map(r => ({ ...r, isEnquiryOnly: false }))
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    res.json({
+      staffInfo: {
+        id: isAll ? 'ALL' : currentStaff.id,
+        name: isAll ? 'All Staff Members' : currentStaff.full_name,
+        email: isAll ? 'system@hotel.com' : currentStaff.email,
+        role: isAll ? 'admin' : currentStaff.role,
+        phone: currentStaff.phone || '',
+      },
+      stats: {
+        enquiriesAttended: totalAttended,
+        convertedToReservation: totalConverted,
+        pendingEnquiries,
+        cancelledCount,
+        conversionRate,
+        totalRevenue,
+      },
+      allStaff,
+      records: combinedRecords,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

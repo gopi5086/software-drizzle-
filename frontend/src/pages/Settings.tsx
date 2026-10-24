@@ -1,28 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  User, 
-  MapPin, 
-  Bell, 
-  Shield, 
-  Moon, 
+import {
+  User,
+  MapPin,
+  Shield,
   Globe,
   Save,
   Hotel,
   Lock,
-  Mail,
-  SmartphoneIcon,
-  Palette
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Settings: React.FC = () => {
   const [activeSection, setActiveSection] = useState('Hotel Profile');
-  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState({
-    email: true,
-    push: false,
-    sms: true,
-    weekly: true
-  });
 
   const handleSave = () => {
     toast.promise(new Promise(res => setTimeout(res, 1000)), {
@@ -35,9 +24,7 @@ const Settings: React.FC = () => {
   const navItems = [
     { name: 'Hotel Profile', icon: Hotel },
     { name: 'My Account', icon: User },
-    { name: 'Notifications', icon: Bell },
     { name: 'Security', icon: Shield },
-    { name: 'Appearance', icon: Moon },
   ];
 
   return (
@@ -157,45 +144,6 @@ const Settings: React.FC = () => {
              </div>
            )}
 
-           {activeSection === 'Notifications' && (
-             <div className="glass-card p-10 rounded-[2.5rem] space-y-8">
-                <div>
-                   <h3 className="text-2xl font-bold text-primary mb-2">Notification Center</h3>
-                   <p className="text-sm text-soft-slate">Configure how and when you want to be alerted.</p>
-                </div>
-                <div className="space-y-4">
-                   {[
-                     { id: 'email', label: 'Email Alerts', desc: 'Critical system reports and revenue summaries.', icon: Mail },
-                     { id: 'push', label: 'Push Notifications', desc: 'Real-time check-in and booking alerts on desktop.', icon: Bell },
-                     { id: 'sms', label: 'SMS Notifications', desc: 'Urgent security alerts and staff messages.', icon: SmartphoneIcon },
-                     { id: 'weekly', label: 'Weekly Performance Report', desc: 'Detailed PDF sent every Sunday morning.', icon: Save }
-                   ].map((item) => (
-                     <div key={item.id} className="flex items-center justify-between p-6 bg-background/50 rounded-3xl hover:bg-background transition-colors">
-                        <div className="flex items-center gap-6">
-                           <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-primary shadow-sm">
-                              <item.icon className="w-6 h-6" />
-                           </div>
-                           <div>
-                              <p className="font-bold text-primary">{item.label}</p>
-                              <p className="text-xs text-soft-slate">{item.desc}</p>
-                           </div>
-                        </div>
-                        <button 
-                          onClick={() => {
-                            const key = item.id as keyof typeof isNotificationsEnabled;
-                            setIsNotificationsEnabled({...isNotificationsEnabled, [key]: !isNotificationsEnabled[key]});
-                            toast.success(`${item.label} ${!isNotificationsEnabled[key] ? 'Enabled' : 'Disabled'}`);
-                          }}
-                          className={`w-14 h-7 rounded-full relative transition-colors ${isNotificationsEnabled[item.id as keyof typeof isNotificationsEnabled] ? 'bg-elegant-gold' : 'bg-gray-200'}`}
-                        >
-                           <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${isNotificationsEnabled[item.id as keyof typeof isNotificationsEnabled] ? 'left-8' : 'left-1'}`} />
-                        </button>
-                     </div>
-                   ))}
-                </div>
-             </div>
-           )}
-
            {activeSection === 'Security' && (
              <div className="glass-card p-10 rounded-[2.5rem] space-y-10">
                 <div>
@@ -225,46 +173,6 @@ const Settings: React.FC = () => {
                          </div>
                       </div>
                       <button className="text-xs font-bold text-elegant-gold px-6 py-2 border border-elegant-gold/20 rounded-xl hover:bg-elegant-gold/5 transition-colors">Enable Now</button>
-                   </div>
-                </div>
-             </div>
-           )}
-
-           {activeSection === 'Appearance' && (
-             <div className="glass-card p-10 rounded-[2.5rem] space-y-10">
-                <div>
-                   <h3 className="text-2xl font-bold text-primary mb-2">Interface Customization</h3>
-                   <p className="text-sm text-soft-slate">Personalize your management dashboard experience.</p>
-                </div>
-                <div className="grid grid-cols-2 gap-8">
-                   <div className="space-y-4">
-                      <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest pl-1">Theme Mode</p>
-                      <div className="flex gap-4">
-                         <button className="flex-1 p-4 bg-primary text-white rounded-2xl flex flex-col items-center gap-2 border-2 border-primary">
-                            <Moon className="w-6 h-6" />
-                            <span className="text-xs font-bold">Deep Charcoal</span>
-                         </button>
-                         <button className="flex-1 p-4 bg-white text-primary rounded-2xl flex flex-col items-center gap-2 border border-border-subtle hover:bg-background transition-all">
-                            <Globe className="w-6 h-6 opacity-30" />
-                            <span className="text-xs font-bold opacity-30">Golden White</span>
-                         </button>
-                      </div>
-                   </div>
-                   <div className="space-y-4">
-                      <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest pl-1">Brand Primary Color</p>
-                      <div className="flex gap-3">
-                         {['#D4AF37', '#2A3439', '#e63946', '#457b9d'].map((color) => (
-                           <button 
-                             key={color} 
-                             className={`w-10 h-10 rounded-full border-4 ${color === '#D4AF37' ? 'border-primary' : 'border-transparent shadow-sm'}`}
-                             style={{ backgroundColor: color }}
-                             onClick={() => toast.success(`Primary color set to ${color}`)}
-                           />
-                         ))}
-                         <button className="w-10 h-10 rounded-full border border-border-subtle flex items-center justify-center text-soft-slate">
-                            <Palette className="w-4 h-4" />
-                         </button>
-                      </div>
                    </div>
                 </div>
              </div>

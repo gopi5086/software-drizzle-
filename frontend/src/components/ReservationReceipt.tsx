@@ -28,6 +28,9 @@ interface ReceiptData {
   checkInTime: string;
   checkOutTime: string;
   created_at?: string;
+  breakfast?: string;
+  breakfastAmount?: number;
+  location?: string;
 }
 
 interface ReservationReceiptProps {
@@ -144,18 +147,19 @@ const ReservationReceipt: React.FC<ReservationReceiptProps> = ({ data }) => {
               ) : (
                 <p style={{ margin: 0, fontSize: '13px', fontWeight: 'bold' }}>{data.numRooms} x {data.roomType}</p>
               )}
-              <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#2a7e3b', fontWeight: 600 }}>Breakfast Included</p>
+              {data.breakfast && <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#2a7e3b', fontWeight: 600 }}>{data.breakfast}</p>}
             </div>
           </div>
 
           {/* Extra Charges */}
-          {((data.earlyCheckinAmount || 0) > 0 || (data.lateCheckoutAmount || 0) > 0 || (data.specialRequirementsAmount || 0) > 0) && (
+          {((data.earlyCheckinAmount || 0) > 0 || (data.lateCheckoutAmount || 0) > 0 || (data.specialRequirementsAmount || 0) > 0 || (data.breakfastAmount || 0) > 0) && (
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '40px', marginTop: '10px' }}>
               <span style={{ fontSize: '13px', fontWeight: 'bold', minWidth: '120px' }}>Extra Charges:</span>
               <div style={{ flex: 1 }}>
                 {(data.earlyCheckinAmount || 0) > 0 && <p style={{ margin: '0 0 2px', fontSize: '12px' }}>Early Check-in: ₹{data.earlyCheckinAmount}</p>}
                 {(data.lateCheckoutAmount || 0) > 0 && <p style={{ margin: '0 0 2px', fontSize: '12px' }}>Late Check-out: ₹{data.lateCheckoutAmount}</p>}
                 {(data.stayCosyAmount || 0) > 0 && <p style={{ margin: '0 0 2px', fontSize: '12px' }}>Stay Cosy: ₹{data.stayCosyAmount}</p>}
+                {(data.breakfastAmount || 0) > 0 && <p style={{ margin: '0 0 2px', fontSize: '12px' }}>Breakfast: ₹{data.breakfastAmount}</p>}
                 {(data.specialRequirementsAmount || 0) > 0 && (
                   <div style={{ margin: '0 0 2px' }}>
                     <p style={{ margin: 0, fontSize: '12px' }}>Special Requirements: ₹{data.specialRequirementsAmount}</p>
@@ -203,14 +207,16 @@ const ReservationReceipt: React.FC<ReservationReceiptProps> = ({ data }) => {
         <hr style={{ border: 'none', borderTop: '1px solid #ddd', margin: '14px 0' }} />
 
         {/* Check-in / Check-out Times */}
-        <div style={{ marginLeft: '20px', marginBottom: '14px' }}>
-          <div style={{ display: 'flex', gap: '30px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '13px', minWidth: '130px' }}>Check-in Time</span>
-            <span style={{ fontSize: '13px', fontWeight: 600 }}>{data.checkInTime || '12:00 Noon'}</span>
-          </div>
-          <div style={{ display: 'flex', gap: '30px' }}>
-            <span style={{ fontSize: '13px', minWidth: '130px' }}>Check-Out Time</span>
-            <span style={{ fontSize: '13px', fontWeight: 600 }}>{data.checkOutTime || '11:00 A.M'}</span>
+        <div style={{ marginBottom: '14px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '60px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ margin: '0 0 2px', fontSize: '12px', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Check-in Time</p>
+              <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#222' }}>{data.checkInTime || '12:00 Noon'}</p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ margin: '0 0 2px', fontSize: '12px', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Check-Out Time</p>
+              <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#222' }}>{data.checkOutTime || '11:00 A.M'}</p>
+            </div>
           </div>
         </div>
 
@@ -259,7 +265,7 @@ const ReservationReceipt: React.FC<ReservationReceiptProps> = ({ data }) => {
       {/* ── FOOTER ── */}
       <div style={{ textAlign: 'center', padding: '12px 20px 16px', borderTop: '1px solid #eee' }}>
         <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: 'bold', color: '#2a7e3b' }}>
-          Thank you for choosing  Drizzledrop Inn Ooty
+          Thank you for choosing  Drizzledrop Inn {data.location || 'Ooty'}
         </p>
         <p style={{ margin: 0, fontSize: '12px', color: '#2a7e3b', fontWeight: 600 }}>
           We look forward to your stay.

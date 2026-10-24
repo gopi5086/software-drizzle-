@@ -1,16 +1,38 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-const pool = mysql.createPool({
+// --- Debug: confirm the env vars actually reached this process ---
+// (Never log the password.)
+console.log('🔎 DB Config Loaded:', {
   host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
+  hasPassword: Boolean(process.env.DB_PASSWORD)
+});
+
+if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_NAME) {
+  console.error(
+    '❌ Missing required DB env vars. Check that DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME are set on the deployment platform (not just in your local .env file).'
+  );
+}
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST?.trim(),
+  user: process.env.DB_USER?.trim(),
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME?.trim(),
+  port: Number(process.env.DB_PORT) || 3306,
   ssl: { rejectUnauthorized: false },
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
+});
+
+// Surface pool-level connection errors (e.g. dropped connections) instead of
+// letting them crash the process silently.
+pool.on('error', (err) => {
+  console.error('❌ MySQL Pool Error:', err.code || err.message);
 });
 
 const initDB = async () => {
@@ -27,6 +49,7 @@ const initDB = async () => {
         password VARCHAR(255) NOT NULL,
         role ENUM('admin', 'staff') DEFAULT 'staff',
         phone VARCHAR(20),
+        branch_location VARCHAR(100) DEFAULT 'Chennai',
         status ENUM('active', 'inactive') DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -80,7 +103,46 @@ const initDB = async () => {
         id_proof VARCHAR(100),
         check_in_time VARCHAR(20) DEFAULT '12:00 Noon',
         check_out_time VARCHAR(20) DEFAULT '11:00 A.M',
+        breakfast VARCHAR(255) DEFAULT 'Breakfast Included',
+        breakfast_amount DECIMAL(10, 2) DEFAULT 0.00,
+        location VARCHAR(100) DEFAULT 'Ooty',
         created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS enquiries (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        guest_name VARCHAR(100) NOT NULL,
+        guest_email VARCHAR(100),
+        guest_phone VARCHAR(20) NOT NULL,
+        check_in DATE NOT NULL,
+        check_out DATE NOT NULL,
+        adults INT DEFAULT 1,
+        children INT DEFAULT 0,
+        room_type VARCHAR(50),
+        num_rooms INT DEFAULT 1,
+        room_details TEXT,
+        special_requirements TEXT,
+        special_requirements_amount DECIMAL(10, 2) DEFAULT 0,
+        early_checkin_amount DECIMAL(10, 2) DEFAULT 0,
+        late_checkout_amount DECIMAL(10, 2) DEFAULT 0,
+        stay_cosy_amount DECIMAL(10, 2) DEFAULT 0,
+        total_tariff DECIMAL(10, 2),
+        advance DECIMAL(10, 2) DEFAULT 0,
+        status VARCHAR(50) DEFAULT 'Enquiry',
+        booked_by VARCHAR(50) DEFAULT 'Direct',
+        comments TEXT,
+        address TEXT,
+        id_proof VARCHAR(100),
+        check_in_time VARCHAR(20) DEFAULT '12:00 Noon',
+        check_out_time VARCHAR(20) DEFAULT '11:00 A.M',
+        breakfast VARCHAR(255) DEFAULT 'Breakfast Included',
+        breakfast_amount DECIMAL(10, 2) DEFAULT 0.00,
+        location VARCHAR(100) DEFAULT 'Chennai',
+        created_by INT,
+        reservation_id INT DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -93,10 +155,23 @@ const initDB = async () => {
     }
 
     try {
+      await connection.query(`ALTER TABLE enquiries ADD COLUMN IF NOT EXISTS comments TEXT`);
+    } catch (err) {
+      try { await connection.query('ALTER TABLE enquiries ADD COLUMN comments TEXT'); } catch (e) {}
+    }
+
+    try {
+      await connection.query(`ALTER TABLE enquiries ADD COLUMN IF NOT EXISTS booked_by VARCHAR(50) DEFAULT 'Direct'`);
+    } catch (err) {
+      try { await connection.query('ALTER TABLE enquiries ADD COLUMN booked_by VARCHAR(50) DEFAULT "Direct"'); } catch (e) {}
+    }
+
+    try {
       await connection.query(
         `ALTER TABLE reservations 
          ADD COLUMN IF NOT EXISTS address TEXT,
          ADD COLUMN IF NOT EXISTS id_proof VARCHAR(100),
+         ADD COLUMN IF NOT EXISTS location VARCHAR(100) DEFAULT 'Ooty',
          ADD COLUMN IF NOT EXISTS created_by INT, 
          ADD FOREIGN KEY IF NOT EXISTS (created_by) REFERENCES users(id) ON DELETE SET NULL`
       );
@@ -104,6 +179,7 @@ const initDB = async () => {
       // Some versions of MySQL don't support ADD COLUMN IF NOT EXISTS
       try { await connection.query(`ALTER TABLE reservations ADD COLUMN address TEXT`); } catch (e) { }
       try { await connection.query(`ALTER TABLE reservations ADD COLUMN id_proof VARCHAR(100)`); } catch (e) { }
+      try { await connection.query(`ALTER TABLE reservations ADD COLUMN location VARCHAR(100) DEFAULT 'Ooty'`); } catch (e) { }
       try { await connection.query(`ALTER TABLE reservations ADD COLUMN check_in_time VARCHAR(20) DEFAULT '12:00 Noon'`); } catch (e) { }
       try { await connection.query(`ALTER TABLE reservations ADD COLUMN check_out_time VARCHAR(20) DEFAULT '11:00 A.M'`); } catch (e) { }
       try { await connection.query(`ALTER TABLE reservations ADD COLUMN created_by INT`); } catch (e) { }
@@ -112,6 +188,9 @@ const initDB = async () => {
     // Add check_in_time and check_out_time if missing
     try { await connection.query(`ALTER TABLE reservations ADD COLUMN check_in_time VARCHAR(20) DEFAULT '12:00 Noon'`); } catch (e) { }
     try { await connection.query(`ALTER TABLE reservations ADD COLUMN check_out_time VARCHAR(20) DEFAULT '11:00 A.M'`); } catch (e) { }
+    try { await connection.query(`ALTER TABLE reservations ADD COLUMN breakfast VARCHAR(255) DEFAULT 'Breakfast Included'`); } catch (e) { }
+    try { await connection.query(`ALTER TABLE reservations ADD COLUMN breakfast_amount DECIMAL(10, 2) DEFAULT 0.00`); } catch (e) { }
+    try { await connection.query("ALTER TABLE users ADD COLUMN branch_location VARCHAR(100) DEFAULT 'Chennai'"); } catch (e) { }
 
     try {
       await connection.query(

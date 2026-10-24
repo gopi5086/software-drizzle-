@@ -34,6 +34,9 @@ export interface UnifiedInvoiceData {
   created_at?: string;
   address?: string;
   id_proof?: string;
+  breakfast?: string;
+  breakfastAmount?: number;
+  location?: string;
 }
 
 interface UnifiedInvoiceProps {
@@ -65,11 +68,12 @@ const UnifiedInvoice: React.FC<UnifiedInvoiceProps> = ({ data }) => {
 
   // Build Table Rows
   const tableRows: { label: React.ReactNode; value: number | string; shade: boolean }[] = [
-    { label: <><strong>Check-In Date:</strong></>, value: formatDate(data.checkIn), shade: true },
-    { label: <><strong>Check-Out Date:</strong></>, value: formatDate(data.checkOut), shade: false },
-    { label: <strong>Total Number of Guests (Adults)</strong>, value: data.adults, shade: true },
-    { label: <><strong>Total Number of Guests</strong> <span style={{ fontWeight: 'normal', fontSize: '10px' }}>(Kids - Below 10 years)</span></>, value: data.children, shade: false },
-    { label: <strong>No. of Rooms</strong>, value: data.numRooms, shade: true },
+    { label: <><strong>Location:</strong></>, value: data.location || 'Ooty', shade: true },
+    { label: <><strong>Check-In Date:</strong></>, value: formatDate(data.checkIn), shade: false },
+    { label: <><strong>Check-Out Date:</strong></>, value: formatDate(data.checkOut), shade: true },
+    { label: <strong>Total Number of Guests (Adults)</strong>, value: data.adults, shade: false },
+    { label: <><strong>Total Number of Guests</strong> <span style={{ fontWeight: 'normal', fontSize: '10px' }}>(Kids - Below 10 years)</span></>, value: data.children, shade: true },
+    { label: <strong>No. of Rooms</strong>, value: data.numRooms, shade: false },
   ];
 
   let shadeCount = false;
@@ -147,6 +151,16 @@ const UnifiedInvoice: React.FC<UnifiedInvoiceProps> = ({ data }) => {
     shadeCount = !shadeCount;
   }
 
+  // Add Breakfast Charges
+  if (data.breakfastAmount && data.breakfastAmount > 0) {
+    tableRows.push({
+      label: <strong>Breakfast Charges</strong>,
+      value: data.breakfastAmount,
+      shade: shadeCount
+    });
+    shadeCount = !shadeCount;
+  }
+
   return (
     <div
       id="unified-invoice"
@@ -175,10 +189,10 @@ const UnifiedInvoice: React.FC<UnifiedInvoiceProps> = ({ data }) => {
           <img src="/logo.png" alt="DrizzleDrop Inn" style={{ height: '70px', width: 'auto', objectFit: 'contain' }} />
         </div>
 
-        {/* INVOICE label */}
+        {/* INVOICE / QUOTATION label */}
         <div style={{ flex: 1, textAlign: 'right', paddingTop: '4px' }}>
-          <h1 style={{ fontSize: '38px', fontWeight: 900, margin: 0, letterSpacing: '2px' }}>
-            {data.status === 'Completed' ? 'RECEIPT' : 'INVOICE'}
+          <h1 style={{ fontSize: '24px', fontWeight: 900, margin: 0, letterSpacing: '1px' }}>
+            {data.status === 'Completed' ? 'RECEIPT' : (data.status === 'Confirmed' ? 'INVOICE' : 'QUOTATION FOR ENQUIRY')}
           </h1>
           {data.created_at && (
             <p style={{ margin: 0, fontSize: '9px', fontWeight: 'bold' }}>
@@ -191,7 +205,7 @@ const UnifiedInvoice: React.FC<UnifiedInvoiceProps> = ({ data }) => {
       {/* Greetings */}
       <div style={{ padding: '2px 32px 4px' }}>
         <p style={{ margin: 0, color: '#5a8c5a', fontStyle: 'italic', fontWeight: 'bold', fontSize: '11px' }}>
-          Greetings from DrizzleDrop Inn!!!!
+          Greetings from DrizzleDrop Inn {data.location ? `(${data.location})` : ''}!!!!
         </p>
       </div>
 
@@ -238,7 +252,7 @@ const UnifiedInvoice: React.FC<UnifiedInvoiceProps> = ({ data }) => {
           {/* Rate includes */}
           <div style={{ marginBottom: '8px' }}>
             <p style={{ margin: '0 0 2px', color: '#d97706', fontWeight: 'bold', fontSize: '11px' }}>The above rate includes:</p>
-            <p style={{ margin: '0', fontWeight: 'bold' }}>Breakfast</p>
+            {data.breakfast && <p style={{ margin: '0', fontWeight: 'bold' }}>{data.breakfast}</p>}
             <p style={{ margin: '0', fontWeight: 'bold' }}>Tax</p>
           </div>
 
@@ -370,7 +384,18 @@ const UnifiedInvoice: React.FC<UnifiedInvoiceProps> = ({ data }) => {
       </div>
 
       {/* ── TIMES ── */}
-      <div style={{ padding: '8px 32px 0', fontSize: '10px', fontWeight: 'bold' }}>
+      <div
+        style={{
+          padding: '8px 32px 0',
+          fontSize: '10px',
+          fontWeight: 'bold',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+        }}
+      >
         <p style={{ margin: 0 }}>Checkin Time: {data.checkInTime || '12:00 Noon'}</p>
         <p style={{ margin: '2px 0 0' }}>Checkout Time: {data.checkOutTime || '11:00 A.M'}</p>
       </div>
@@ -387,8 +412,17 @@ const UnifiedInvoice: React.FC<UnifiedInvoiceProps> = ({ data }) => {
           Manager: &nbsp; 9150486153
         </p>
         <div style={{ fontSize: '10px', fontWeight: 'bold', lineHeight: '1.6' }}>
-          <p style={{ margin: 0 }}>215 H, Dispensary Road,, Fern Hill, Ooty, Tamil Nadu 643004</p>
-          <p style={{ margin: 0 }}>Ph: 0423 - 2440551, 0423 - 2440552</p>
+          {data.location === 'Chennai' ? (
+            <>
+              <p style={{ margin: 0 }}>DrizzleDrop Inn, Chennai, Tamil Nadu</p>
+              <p style={{ margin: 0 }}>Ph: +91 99628 22355, 9150486153</p>
+            </>
+          ) : (
+            <>
+              <p style={{ margin: 0 }}>215 H, Dispensary Road, Fern Hill, Ooty, Tamil Nadu 643004</p>
+              <p style={{ margin: 0 }}>Ph: 0423 - 2440551, 0423 - 2440552</p>
+            </>
+          )}
         </div>
         <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
           <p style={{ margin: 0 }}>Email: stay@drizzledropinn.com | Website: www.drizzledropinn.com</p>

@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Phone, User, Mail, MapPin, Search, ArrowRight, CheckCircle2, X, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../api/axios';
+import LocationPickerModal from '../components/LocationPickerModal';
 
 interface GuestInfo {
   full_name: string;
@@ -13,11 +13,11 @@ interface GuestInfo {
 }
 
 const GuestLookupPage: React.FC = () => {
-  const navigate = useNavigate();
   const [phone, setPhone] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [guestFound, setGuestFound] = useState<GuestInfo | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = async (e?: React.FormEvent) => {
@@ -46,7 +46,7 @@ const GuestLookupPage: React.FC = () => {
     } catch (err: any) {
       if (err.response?.status === 404) {
         setNotFound(true);
-        toast.info('No guest found with this number. You can create a new booking.');
+        toast.info('No guest found with this number. You can create a quotation for enquiry.');
       } else {
         toast.error('Error searching guest. Check your connection.');
       }
@@ -62,28 +62,20 @@ const GuestLookupPage: React.FC = () => {
     inputRef.current?.focus();
   };
 
+  const prefillData = guestFound
+    ? {
+        guestName: guestFound.full_name,
+        guestEmail: guestFound.email,
+        guestPhone: guestFound.phone,
+        address: guestFound.address,
+        idProof: guestFound.id_proof,
+      }
+    : {
+        guestPhone: phone.trim(),
+      };
+
   const handleProceedBooking = () => {
-    if (guestFound) {
-      navigate('/create-reservation', {
-        state: {
-          prefill: {
-            guestName: guestFound.full_name,
-            guestEmail: guestFound.email,
-            guestPhone: guestFound.phone,
-            address: guestFound.address,
-            idProof: guestFound.id_proof,
-          }
-        }
-      });
-    } else {
-      navigate('/create-reservation', {
-        state: {
-          prefill: {
-            guestPhone: phone.trim(),
-          }
-        }
-      });
-    }
+    setShowLocationModal(true);
   };
 
   return (
@@ -194,7 +186,7 @@ const GuestLookupPage: React.FC = () => {
               className="w-full flex items-center justify-center gap-3 py-4 font-black text-base rounded-2xl shadow-lg transition-transform hover:scale-[1.02]"
               style={{ background: '#D4AF37', color: '#1a1a2e' }}
             >
-              Proceed to Create Booking
+              Proceed to Quotation for Enquiry
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
@@ -229,6 +221,12 @@ const GuestLookupPage: React.FC = () => {
       <p className="mt-6 text-xs text-gray-300 text-center">
         Drizzle Drop Inn • Internal Staff Tool
       </p>
+
+      <LocationPickerModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        extraState={{ prefill: prefillData }}
+      />
     </div>
   );
 };

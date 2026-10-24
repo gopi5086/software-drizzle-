@@ -6,6 +6,18 @@
     @apply bg-background text-deep-charcoal antialiased;
     font-family: 'Inter', sans-serif;
   }
+
+  /* Hide number input spinners (up/down arrows) */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
 }
 
 @layer components {

@@ -412,9 +412,13 @@ const Customers: React.FC = () => {
                   className="w-full bg-background border-none rounded-xl py-4 px-4 text-sm focus:ring-2 focus:ring-elegant-gold appearance-none flex-[2]"
                   onChange={(e) => setFormData({...formData, roomType: e.target.value})}
                 >
-                  <option value="Standard Room">Standard Rm</option>
-                  <option value="Deluxe Room">Deluxe Rm</option>
-                  <option value="Triple Room">Triple Rm</option>
+                  <option value="Std Room">Std Room</option>
+                  <option value="Del Room">Del Room</option>
+                  <option value="Fam Room">Fam Room</option>
+                  <option value="Sup Del Room">Sup Del Room</option>
+                  <option value="Suite Room">Suite Room</option>
+                  <option value="Del. Bal Room">Del. Bal Room</option>
+                  <option value="Del. Villa">Del. Villa</option>
                 </select>
               </div>
             </div>

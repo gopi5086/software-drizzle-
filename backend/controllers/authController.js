@@ -34,6 +34,10 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
+    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+      console.error('❌ Login failed - database unreachable:', error.code, error.message);
+      return res.status(503).json({ message: 'Database temporarily unavailable. Please try again shortly.' });
+    }
     res.status(500).json({ message: error.message });
   }
 };

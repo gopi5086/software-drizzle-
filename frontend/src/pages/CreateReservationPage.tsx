@@ -18,9 +18,10 @@ import {
   Trash2,
   Plus,
   LogOut,
-  Loader2
+  Loader2,
+  MapPin
 } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import UnifiedInvoice, { type UnifiedInvoiceData } from '../components/UnifiedInvoice';
 import Modal from '../components/Modal';
@@ -31,45 +32,161 @@ import logo from '../assets/logo.png'; // Use logo.png asset
 const CreateReservationPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = !!id;
+
   const handleLogout = () => {
     navigate('/');
   };
 
   const [showPreview, setShowPreview] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    guestName: string;
+    guestPhone: string;
+    guestEmail: string;
+    checkIn: string;
+    checkOut: string;
+    adults: number | string;
+    children: number | string;
+    rooms: { type: string; count: number | string; rate: number | string }[];
+    roomNo: string;
+    breakfast: string;
+    breakfastAmount: number | string;
+    extraBed: boolean;
+    specialRequirements: string;
+    specialRequirementsAmount: number | string;
+    earlyCheckinAmount: number | string;
+    lateCheckoutAmount: number | string;
+    stayCosyAmount: number | string;
+    totalTariff: number | string;
+    address: string;
+    idProof: string;
+    checkInTime: string;
+    checkOutTime: string;
+    foodBill: number | string;
+    advance: number | string;
+    status: string;
+    bookedBy: string;
+    location: string;
+  }>({
     guestName: '',
     guestPhone: '',
     guestEmail: '',
     checkIn: '',
     checkOut: '',
-    adults: 1,
-    children: 0,
-    rooms: [{ type: 'Deluxe Room', count: 1, rate: 2500 }],
+    adults: '',
+    children: '',
+    rooms: [{ type: 'Std Room', count: '', rate: '' }],
     roomNo: '',
-    breakfast: true,
+    breakfast: 'No Breakfast',
+    breakfastAmount: '',
     extraBed: false,
     specialRequirements: '',
-    specialRequirementsAmount: 0,
-    earlyCheckinAmount: 0,
-    lateCheckoutAmount: 0,
-    stayCosyAmount: 0,
-    totalTariff: 0,
+    specialRequirementsAmount: '',
+    earlyCheckinAmount: '',
+    lateCheckoutAmount: '',
+    stayCosyAmount: '',
+    totalTariff: '',
     address: '',
     idProof: '',
     checkInTime: '12:00 Noon',
     checkOutTime: '11:00 A.M',
-    foodBill: 0,
-    advance: 0,
-    status: 'Confirmed',
-    bookedBy: 'Manager',
+    foodBill: '',
+    advance: '',
+    status: 'Pending',
+    bookedBy: 'Direct',
+    location: (location.state as any)?.location || 'Chennai',
   });
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSearchingGuest, setIsSearchingGuest] = useState(false);
 
+  const formatDateForInput = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  useEffect(() => {
+    if (!isEditMode) {
+      const loc = (location.state as any)?.location;
+      if (loc === 'Ooty') {
+        navigate('/create-ooty-enquiry', { replace: true, state: location.state });
+      } else if (loc === 'Chennai') {
+        navigate('/create-chennai-enquiry', { replace: true, state: location.state });
+      } else {
+        navigate('/enquiries', { replace: true });
+      }
+    }
+  }, [isEditMode, location.state, navigate]);
+
+  // Load existing reservation in edit mode
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchReservation = async () => {
+        try {
+          const res = await api.get(`/reservations/${id}`);
+          const data = res.data;
+          
+          let parsedRooms: { type: string; count: number | string; rate: number | string }[] = [{ type: 'Std Room', count: '', rate: '' }];
+          if (data.room_details) {
+            try {
+              if (typeof data.room_details === 'string') {
+                parsedRooms = JSON.parse(data.room_details);
+              } else if (Array.isArray(data.room_details)) {
+                parsedRooms = data.room_details;
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          } else if (data.room_type) {
+            parsedRooms = [{ type: data.room_type, count: data.num_rooms ?? '', rate: data.total_tariff ?? '' }];
+          }
+
+          setFormData({
+            guestName: data.guest_name || '',
+            guestPhone: data.guest_phone || '',
+            guestEmail: data.guest_email || '',
+            checkIn: data.check_in ? formatDateForInput(data.check_in) : '',
+            checkOut: data.check_out ? formatDateForInput(data.check_out) : '',
+            adults: data.adults !== null && data.adults !== undefined ? data.adults : '',
+            children: data.children !== null && data.children !== undefined ? data.children : '',
+            rooms: parsedRooms,
+            roomNo: '',
+            breakfast: data.breakfast !== undefined && data.breakfast !== null ? data.breakfast : 'No Breakfast',
+            breakfastAmount: data.breakfast_amount !== null && data.breakfast_amount !== undefined ? data.breakfast_amount : '',
+            extraBed: false,
+            specialRequirements: data.special_requirements || '',
+            specialRequirementsAmount: data.special_requirements_amount !== null && data.special_requirements_amount !== undefined ? data.special_requirements_amount : '',
+            earlyCheckinAmount: data.early_checkin_amount !== null && data.early_checkin_amount !== undefined ? data.early_checkin_amount : '',
+            lateCheckoutAmount: data.late_checkout_amount !== null && data.late_checkout_amount !== undefined ? data.late_checkout_amount : '',
+            stayCosyAmount: data.stay_cosy_amount !== null && data.stay_cosy_amount !== undefined ? data.stay_cosy_amount : '',
+            totalTariff: data.total_tariff !== null && data.total_tariff !== undefined ? data.total_tariff : '',
+            address: data.address || '',
+            idProof: data.id_proof || '',
+            checkInTime: data.check_in_time || '12:00 Noon',
+            checkOutTime: data.check_out_time || '11:00 A.M',
+            foodBill: '',
+            advance: data.advance !== null && data.advance !== undefined ? data.advance : '',
+            status: data.status || 'Confirmed',
+            bookedBy: data.booked_by || 'Direct',
+            location: data.location || 'Ooty',
+          });
+        } catch (err: any) {
+          toast.error('Failed to fetch reservation details: ' + (err.response?.data?.message || err.message));
+        }
+      };
+      fetchReservation();
+    }
+  }, [id, isEditMode]);
+
   // Auto-fill from GuestLookupPage prefill state
   useEffect(() => {
+    if (isEditMode) return;
     const prefill = (location.state as any)?.prefill;
     if (prefill) {
       setFormData(prev => ({
@@ -122,49 +239,61 @@ const CreateReservationPage: React.FC = () => {
   }, [formData.checkIn, formData.checkOut]);
 
   const totalRoomsCount = useMemo(() => {
-    return formData.rooms.reduce((acc, room) => acc + room.count, 0);
+    return formData.rooms.reduce((acc, room) => acc + (Number(room.count) || 0), 0);
   }, [formData.rooms]);
 
   const stayCost = useMemo(() => {
-    return formData.rooms.reduce((acc, room) => acc + (room.rate * room.count * nights), 0);
+    return formData.rooms.reduce((acc, room) => acc + ((Number(room.rate) || 0) * (Number(room.count) || 0) * nights), 0);
   }, [formData.rooms, nights]);
 
   const autoTotalTariff = useMemo(() => {
     return stayCost +
-           formData.specialRequirementsAmount +
-           formData.earlyCheckinAmount +
-           formData.lateCheckoutAmount +
-           formData.stayCosyAmount;
-  }, [stayCost, formData.specialRequirementsAmount, formData.earlyCheckinAmount, formData.lateCheckoutAmount, formData.stayCosyAmount]);
+           (Number(formData.specialRequirementsAmount) || 0) +
+           (Number(formData.earlyCheckinAmount) || 0) +
+           (Number(formData.lateCheckoutAmount) || 0) +
+           (Number(formData.stayCosyAmount) || 0) +
+           (Number(formData.breakfastAmount) || 0);
+  }, [stayCost, formData.specialRequirementsAmount, formData.earlyCheckinAmount, formData.lateCheckoutAmount, formData.stayCosyAmount, formData.breakfastAmount]);
 
   const netPay = useMemo(() => {
     const extraBedCharge = formData.extraBed ? 500 : 0; 
     return stayCost + 
-           formData.foodBill + 
+           (Number(formData.foodBill) || 0) + 
            extraBedCharge + 
-           formData.specialRequirementsAmount + 
-           formData.earlyCheckinAmount + 
-           formData.lateCheckoutAmount +
-           formData.stayCosyAmount;
-  }, [stayCost, formData.foodBill, formData.extraBed, formData.specialRequirementsAmount, formData.earlyCheckinAmount, formData.lateCheckoutAmount, formData.stayCosyAmount]);
+           (Number(formData.specialRequirementsAmount) || 0) + 
+           (Number(formData.earlyCheckinAmount) || 0) + 
+           (Number(formData.lateCheckoutAmount) || 0) +
+           (Number(formData.stayCosyAmount) || 0) +
+           (Number(formData.breakfastAmount) || 0);
+  }, [stayCost, formData.foodBill, formData.extraBed, formData.specialRequirementsAmount, formData.earlyCheckinAmount, formData.lateCheckoutAmount, formData.stayCosyAmount, formData.breakfastAmount]);
 
   const balanceDue = useMemo(() => {
-    return netPay - formData.advance;
+    return netPay - (Number(formData.advance) || 0);
   }, [netPay, formData.advance]);
 
   const invoiceData: UnifiedInvoiceData = {
     ...formData,
-    numRooms: totalRoomsCount,
+    adults: Number(formData.adults) || 0,
+    children: Number(formData.children) || 0,
+    numRooms: totalRoomsCount || 1,
     roomType: formData.rooms.length > 0 ? formData.rooms[0].type : '', // Primary type for fallback
+    rooms: formData.rooms.map(r => ({ type: r.type, count: Number(r.count) || 1, rate: Number(r.rate) || 0 })),
     nights,
     totalTariff: netPay,
-    balanceDue
+    advance: Number(formData.advance) || 0,
+    balanceDue,
+    location: formData.location,
+    breakfastAmount: Number(formData.breakfastAmount) || 0,
+    specialRequirementsAmount: Number(formData.specialRequirementsAmount) || 0,
+    earlyCheckinAmount: Number(formData.earlyCheckinAmount) || 0,
+    lateCheckoutAmount: Number(formData.lateCheckoutAmount) || 0,
+    stayCosyAmount: Number(formData.stayCosyAmount) || 0,
   };
 
   const addRoom = () => {
     setFormData({
       ...formData,
-      rooms: [...formData.rooms, { type: 'Standard Room', count: 1, rate: 2000 }]
+      rooms: [...formData.rooms, { type: 'Std Room', count: '', rate: '' }]
     });
   };
 
@@ -185,34 +314,49 @@ const CreateReservationPage: React.FC = () => {
   const handleSaveConfirmed = async () => {
     setShowConfirmModal(false);
     try {
-      await api.post('/reservations', {
+      const payload = {
         guest_name: formData.guestName,
         guest_email: formData.guestEmail,
         guest_phone: formData.guestPhone,
         check_in: formData.checkIn,
         check_out: formData.checkOut,
-        adults: formData.adults,
-        children: formData.children,
+        adults: Number(formData.adults) || 1,
+        children: Number(formData.children) || 0,
         room_type: formData.rooms[0]?.type || 'N/A',
-        num_rooms: totalRoomsCount,
-        room_details: formData.rooms,
+        num_rooms: totalRoomsCount || 1,
+        room_details: formData.rooms.map(r => ({
+          type: r.type,
+          count: Number(r.count) || 1,
+          rate: Number(r.rate) || 0,
+        })),
         special_requirements: formData.specialRequirements,
-        special_requirements_amount: formData.specialRequirementsAmount,
-        early_checkin_amount: formData.earlyCheckinAmount,
-        late_checkout_amount: formData.lateCheckoutAmount,
-        stay_cosy_amount: formData.stayCosyAmount || stayCost, // Map stay_cosy_amount to auto Stay Cost
-        total_tariff: formData.totalTariff || autoTotalTariff,
-        advance: formData.advance,
+        special_requirements_amount: Number(formData.specialRequirementsAmount) || 0,
+        early_checkin_amount: Number(formData.earlyCheckinAmount) || 0,
+        late_checkout_amount: Number(formData.lateCheckoutAmount) || 0,
+        stay_cosy_amount: (Number(formData.stayCosyAmount) || 0) || stayCost,
+        total_tariff: (Number(formData.totalTariff) || 0) || autoTotalTariff,
+        advance: Number(formData.advance) || 0,
         check_in_time: formData.checkInTime,
         check_out_time: formData.checkOutTime,
         status: formData.status,
         address: formData.address,
-        id_proof: formData.idProof
-      });
-      toast.success('Booking saved successfully!');
-      navigate('/reservations');
+        id_proof: formData.idProof,
+        breakfast: formData.breakfast,
+        breakfast_amount: Number(formData.breakfastAmount) || 0,
+        location: formData.location || 'Ooty'
+      };
+
+      if (isEditMode) {
+        await api.put(`/reservations/${id}`, payload);
+        toast.success('Quotation updated successfully!');
+        navigate('/reservations');
+      } else {
+        await api.post('/enquiries', payload);
+        toast.success('Enquiry registered successfully!');
+        navigate('/enquiries');
+      }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Error saving reservation');
+      toast.error(err.response?.data?.message || 'Error saving quotation');
     }
   };
 
@@ -225,11 +369,9 @@ const CreateReservationPage: React.FC = () => {
     window.print();
   };
 
-  const roomTypes = [
-    'Standard Room',
-    'Deluxe Room',
-    'Triple Room'
-  ];
+  const roomTypesChennai = ['Std Room', 'Del Room', 'Fam Room', 'Sup Del Room', 'Suite Room'];
+  const roomTypesOoty = ['Std Room', 'Del. Bal Room', 'Fam Room', 'Del. Villa'];
+  const roomTypes = formData.location === 'Chennai' ? roomTypesChennai : roomTypesOoty;
 
   return (
     <div className="min-h-screen pb-20 animate-in fade-in duration-700 print:pb-0 print:min-h-0 print:animate-none">
@@ -244,8 +386,8 @@ const CreateReservationPage: React.FC = () => {
           <div className="flex items-center gap-4">
             <img src={logo} alt="Logo" className="h-8 w-8 object-contain" />
             <div>
-              <h2 className="text-3xl font-black text-primary tracking-tight">Create Booking</h2>
-              <p className="text-xs font-bold text-soft-slate uppercase tracking-widest mt-1">Invoice Generator & Reservation Management</p>
+              <h2 className="text-3xl font-black text-primary tracking-tight">{isEditMode ? 'Edit Quotation' : 'Quotation for Enquiry'}</h2>
+              <p className="text-xs font-bold text-soft-slate uppercase tracking-widest mt-1">Quotation Generator & Reservation Management</p>
             </div>
           </div>
         </div>
@@ -270,7 +412,7 @@ const CreateReservationPage: React.FC = () => {
             className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
           >
             <Save className="w-4 h-4 text-elegant-gold" />
-            Save Booking
+            {isEditMode ? 'Update Quotation' : 'Save Quotation'}
           </button>
         </div>
       </header>
@@ -278,7 +420,7 @@ const CreateReservationPage: React.FC = () => {
       <Modal 
         isOpen={showConfirmModal} 
         onClose={() => setShowConfirmModal(false)}
-        title="Confirm Booking Details"
+        title="Confirm Quotation Details"
       >
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -301,6 +443,10 @@ const CreateReservationPage: React.FC = () => {
             <div className="space-y-1">
               <p className="text-soft-slate uppercase text-[10px] font-bold">Rooms</p>
               <p className="font-bold text-primary">{totalRoomsCount} ({formData.rooms[0]?.type})</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-soft-slate uppercase text-[10px] font-bold">Location</p>
+              <p className="font-bold text-elegant-gold">{formData.location || 'Ooty'}</p>
             </div>
             <div className="space-y-1">
               <p className="text-soft-slate uppercase text-[10px] font-bold">Nights</p>
@@ -334,7 +480,7 @@ const CreateReservationPage: React.FC = () => {
               onClick={handleSaveConfirmed}
               className="flex-1 py-4 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
             >
-              Confirm & Save
+              Confirm & Save Quotation
             </button>
           </div>
         </div>
@@ -426,9 +572,14 @@ const CreateReservationPage: React.FC = () => {
 
             {/* Booking Dates & Rooms */}
             <div className="space-y-6">
-              <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-                <Calendar className="w-4 h-4 text-elegant-gold" />
-                <h3 className="text-sm font-black text-primary uppercase tracking-widest">Stay Information</h3>
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-elegant-gold" />
+                  <h3 className="text-sm font-black text-primary uppercase tracking-widest">Stay Information</h3>
+                </div>
+                <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full flex items-center gap-1 border border-amber-200">
+                  <MapPin className="w-3 h-3 text-amber-600" /> Chennai Branch
+                </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -568,21 +719,40 @@ const CreateReservationPage: React.FC = () => {
                 </div>
 
                 <div className="md:col-span-2 space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border-subtle">
-                    <div className="flex items-center gap-3">
+                  <div className="p-6 bg-background rounded-2xl border border-border-subtle space-y-4">
+                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
                       <Coffee className="w-5 h-5 text-elegant-gold" />
                       <div>
-                        <p className="text-xs font-black text-primary">Include Breakfast</p>
-                        <p className="text-[10px] text-soft-slate font-bold uppercase tracking-widest">Complementary for all guests</p>
+                        <p className="text-xs font-black text-primary">Breakfast Configuration</p>
+                        <p className="text-[10px] text-soft-slate font-bold uppercase tracking-widest">Configure breakfast plan and extra charges</p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, breakfast: !formData.breakfast })}
-                      className={`w-12 h-6 rounded-full transition-colors relative ${formData.breakfast ? 'bg-elegant-gold' : 'bg-gray-300'}`}
-                    >
-                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.breakfast ? 'right-1' : 'left-1'}`} />
-                    </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Meal Plan</label>
+                        <select
+                          className="w-full bg-background border border-border-subtle rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-elegant-gold text-primary font-bold appearance-none"
+                          value={formData.breakfast}
+                          onChange={e => setFormData({ ...formData, breakfast: e.target.value })}
+                        >
+                          <option value="No Breakfast">No Breakfast</option>
+                          <option value="Buffet Breakfast">Buffet Breakfast</option>
+                          <option value="Partial Breakfast">Partial Breakfast</option>
+                          <option value="MAP">MAP</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Breakfast Charge (₹)</label>
+                        <input
+                          type="number"
+                          placeholder="0"
+                          min="0"
+                          className="w-full bg-background border border-border-subtle rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-elegant-gold text-primary font-bold"
+                          value={formData.breakfastAmount}
+                          onChange={e => setFormData({ ...formData, breakfastAmount: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border-subtle">
@@ -700,13 +870,17 @@ const CreateReservationPage: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Booking Source</label>
-                  <input
-                    type="text"
-                    className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold"
+                  <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Booked By (Source)</label>
+                  <select
+                    className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold appearance-none text-primary"
                     value={formData.bookedBy}
                     onChange={e => setFormData({ ...formData, bookedBy: e.target.value })}
-                  />
+                  >
+                    <option value="Direct">Direct</option>
+                    <option value="Agent">Agent</option>
+                    <option value="Website">Website</option>
+                    <option value="OTA">OTA</option>
+                  </select>
                 </div>
               </div>
             </div>

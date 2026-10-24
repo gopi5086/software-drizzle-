@@ -9,13 +9,15 @@ import {
   Clock,
   AlertCircle,
   FileText,
-  Loader2
+  Loader2,
+  MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Modal from '../components/Modal';
 import api from '../api/axios';
 import { exportToCSV, exportToPDF, formatDate } from '../utils/export';
 import UnifiedInvoice, { type UnifiedInvoiceData } from '../components/UnifiedInvoice';
+import { sendInvoiceViaWhatsApp } from '../utils/invoiceCapture';
 
 interface Invoice {
   id: string;
@@ -152,6 +154,72 @@ const Invoices: React.FC = () => {
 
   const handlePrintInvoice = (inv: Invoice) => {
     handleAction(inv);
+  };
+
+  const handleWhatsAppInvoice = async (inv: Invoice) => {
+    const toastId = toast.loading('Fetching reservation data...');
+    try {
+      const res = await api.get(`/reservations/${inv.reservationId}`);
+      const data = res.data;
+
+      // Format phone number
+      let phone = (data.guest_phone || '').replace(/[\s\-\(\)]/g, '');
+      if (phone.startsWith('+')) {
+        phone = phone.slice(1);
+      } else if (phone.length === 10) {
+        phone = '91' + phone;
+      }
+
+      if (!phone) {
+        toast.error('No phone number found for this guest', { id: toastId });
+        return;
+      }
+
+      const invoiceNo = `DDI-${String(data.id).padStart(4, '0')}`;
+
+      const parseRooms = (jsonStr?: string) => {
+        try { return jsonStr ? JSON.parse(jsonStr) : []; } catch { return []; }
+      };
+
+      const invoiceData: UnifiedInvoiceData = {
+        guestName: data.guest_name,
+        guestEmail: data.guest_email,
+        guestPhone: data.guest_phone,
+        checkIn: data.check_in,
+        checkOut: data.check_out,
+        adults: data.adults,
+        children: data.children,
+        numRooms: data.num_rooms,
+        roomType: data.room_type,
+        rooms: parseRooms(data.room_details),
+        specialRequirements: data.special_requirements,
+        specialRequirementsAmount: Number(data.special_requirements_amount || 0),
+        earlyCheckinAmount: Number(data.early_checkin_amount || 0),
+        lateCheckoutAmount: Number(data.late_checkout_amount || 0),
+        stayCosyAmount: Number(data.stay_cosy_amount || 0),
+        totalTariff: Number(data.total_tariff),
+        advance: Number(data.advance || 0),
+        balanceDue: Number(data.total_tariff) - Number(data.advance || 0),
+        checkInTime: data.check_in_time,
+        checkOutTime: data.check_out_time,
+        created_at: data.created_at,
+      };
+
+      toast.loading('Capturing invoice image...', { id: toastId });
+      const result = await sendInvoiceViaWhatsApp(invoiceData, invoiceNo, phone);
+
+      if (result.success) {
+        toast.success(
+          '✅ Invoice image downloaded! WhatsApp is opening to the customer’s chat — tap 📎 to attach and send.',
+          { id: toastId, duration: 7000 }
+        );
+      } else {
+        toast.error('Failed to capture invoice: ' + (result.error || 'Unknown error'), { id: toastId });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to fetch reservation data', { id: toastId });
+    }
   };
 
   const handleSummaryPDF = () => {
@@ -324,6 +392,13 @@ const Invoices: React.FC = () => {
                            title="Download PDF"
                          >
                            <Download className="w-4 h-4" />
+                         </button>
+                         <button
+                           onClick={() => handleWhatsAppInvoice(inv)}
+                           className="p-2 text-soft-slate hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                           title="Send via WhatsApp"
+                         >
+                           <MessageCircle className="w-4 h-4" />
                          </button>
                          <button className="p-2 text-soft-slate hover:text-primary hover:bg-background rounded-lg transition-all" title="More">
                            <MoreVertical className="w-4 h-4" />
