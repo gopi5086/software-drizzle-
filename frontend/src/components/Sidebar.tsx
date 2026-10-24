@@ -4,18 +4,12 @@ import {
   LayoutDashboard,
   CalendarDays,
   Users,
-  UserCheck,
-  Wallet,
-  Receipt,
-  BarChart3,
   Settings,
   Hotel,
   PlusCircle,
   LogOut,
   ClipboardList,
   HelpCircle,
-  TrendingUp,
-  Phone,
   X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -39,13 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandChange, mobileOpen 
     { label: 'Enquiries', icon: HelpCircle, path: '/enquiries', roles: ['admin', 'staff'] },
     { label: 'Reservations', icon: CalendarDays, path: '/reservations', roles: ['admin', 'staff'] },
     { label: 'Record', icon: ClipboardList, path: '/record', roles: ['admin', 'staff'] },
-    { label: 'Guest Lookup', icon: Phone, path: '/guest-lookup', roles: ['admin', 'staff'] },
-    { label: 'Customers', icon: Users, path: '/customers', roles: ['admin'] },
-    { label: 'Staff', icon: UserCheck, path: '/staff', roles: ['admin'] },
-    { label: 'Revenue', icon: TrendingUp, path: '/staff-revenue', roles: ['admin', 'staff'] },
-    { label: 'Finance', icon: Wallet, path: '/finance', roles: ['admin'] },
-    { label: 'Invoices', icon: Receipt, path: '/invoices', roles: ['admin', 'staff'] },
-    { label: 'Reports', icon: BarChart3, path: '/reports', roles: ['admin'] },
+    { label: 'Staff', icon: Users, path: '/staff', roles: ['admin'] },
     { label: 'Settings', icon: Settings, path: '/settings', roles: ['admin'] },
   ];
 
