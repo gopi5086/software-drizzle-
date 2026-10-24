@@ -4,22 +4,34 @@ const nodemailer = require('nodemailer');
 let _transporter = null;
 function getTransporter() {
   if (!_transporter) {
+    const user = (process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com').trim();
+    const pass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
+
     console.log('[EMAIL] Creating SMTP transporter with:', {
-      host: process.env.EMAIL_HOST || 'smtp.ethereal.email',
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
       port: process.env.EMAIL_PORT || 587,
-      user: process.env.EMAIL_USER || '(not set)',
+      user: user || '(not set)',
+      fromName: process.env.EMAIL_FROM_NAME || 'drizzledropinn',
     });
+
     _transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'smtp.ethereal.email',
+      service: 'gmail',
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.EMAIL_PORT) || 587,
-      secure: false,
+      secure: parseInt(process.env.EMAIL_PORT) === 465,
       auth: {
-        user: process.env.EMAIL_USER || 'placeholder@ethereal.email',
-        pass: process.env.EMAIL_PASS || 'placeholder_pass',
+        user: user,
+        pass: pass,
       },
     });
   }
   return _transporter;
+}
+
+function getSender() {
+  const user = (process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com').trim();
+  const name = (process.env.EMAIL_FROM_NAME || 'drizzledropinn').trim();
+  return `"${name}" <${user}>`;
 }
 
 exports.sendInvoiceEmail = async (res) => {
@@ -193,7 +205,7 @@ exports.sendInvoiceEmail = async (res) => {
 
   try {
     const info = await getTransporter().sendMail({
-      from: `"Drizzle Drop Inn" <${process.env.EMAIL_USER || 'noreply@drizzledropinn.com'}>`,
+      from: getSender(),
       to: res.guest_email,
       subject: `Booking Confirmation & Invoice - ${invoiceNo}`,
       html: html,
@@ -383,7 +395,7 @@ exports.sendReceiptEmail = async (res) => {
 
   try {
     const info = await getTransporter().sendMail({
-      from: `"Drizzle Drop Inn" <${process.env.EMAIL_USER || 'noreply@drizzledropinn.com'}>`,
+      from: getSender(),
       to: res.guest_email,
       subject: `Reservation Receipt - ${receiptNo}`,
       html: html,
@@ -551,7 +563,7 @@ exports.sendEnquiryEmail = async (enq) => {
 
   try {
     const info = await getTransporter().sendMail({
-      from: `"Drizzle Drop Inn" <${process.env.EMAIL_USER || 'noreply@drizzledropinn.com'}>`,
+      from: getSender(),
       to: enq.guest_email,
       subject: `Quotation & Invoice - ${quoteNo} | DrizzleDrop Inn`,
       html: html,
