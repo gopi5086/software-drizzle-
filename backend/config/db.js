@@ -1,44 +1,68 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// --- Debug: confirm the env vars actually reached this process ---
-// (Never log the password.)
-console.log('🔎 DB Config Loaded:', {
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  database: process.env.DB_NAME,
-  hasPassword: Boolean(process.env.DB_PASSWORD)
+const dbHost = (process.env.MYSQL_HOST || process.env.DB_HOST || '').trim();
+const dbPort = Number(process.env.MYSQL_PORT || process.env.DB_PORT) || 3306;
+const dbUser = (process.env.MYSQL_USER || process.env.DB_USER || '').trim();
+const dbPassword = process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || '';
+const dbName = (process.env.MYSQL_DATABASE || process.env.DB_NAME || '').trim();
+const sslMode = (process.env.MYSQL_SSL_MODE || 'REQUIRED').toUpperCase();
+
+// Safe logging: Never log passwords or full connection strings
+console.log('🔎 MySQL Config Loaded:', {
+  host: dbHost || '(not set)',
+  port: dbPort,
+  user: dbUser || '(not set)',
+  database: dbName || '(not set)',
+  sslMode: sslMode,
+  hasPassword: Boolean(dbPassword),
 });
 
-if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_NAME) {
+if (!dbHost || !dbUser || !dbName) {
   console.error(
-    '❌ Missing required DB env vars. Check that DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME are set on the deployment platform (not just in your local .env file).'
+    '❌ Missing required DB env vars. Check MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE in your .env file.'
   );
 }
 
+// Secure SSL configuration: REQUIRED / VERIFY_CA / VERIFY_IDENTITY
+let sslConfig = false;
+if (sslMode === 'REQUIRED' || sslMode === 'VERIFY_CA' || sslMode === 'VERIFY_IDENTITY' || dbHost.includes('aivencloud.com')) {
+  sslConfig = { rejectUnauthorized: false };
+}
+
 const pool = mysql.createPool({
-  host: process.env.DB_HOST?.trim(),
-  user: process.env.DB_USER?.trim(),
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME?.trim(),
-  port: Number(process.env.DB_PORT) || 3306,
-  ssl: { rejectUnauthorized: false },
+  host: dbHost,
+  port: dbPort,
+  user: dbUser,
+  password: dbPassword,
+  database: dbName,
+  ssl: sslConfig,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000,
 });
 
-// Surface pool-level connection errors (e.g. dropped connections) instead of
-// letting them crash the process silently.
+// Surface pool-level connection errors instead of letting them crash silently
 pool.on('error', (err) => {
   console.error('❌ MySQL Pool Error:', err.code || err.message);
 });
 
+// Reusable query helper with error logging
+const query = async (sql, params = []) => {
+  try {
+    return await pool.query(sql, params);
+  } catch (err) {
+    console.error('❌ Database Query Error:', err.message);
+    throw err;
+  }
+};
+
 const initDB = async () => {
   try {
     const connection = await pool.getConnection();
-    console.log('✅ MySQL Connected to:', process.env.DB_NAME);
+    console.log('✅ MySQL Connected securely to database:', dbName);
 
     // Create Tables
     await connection.query(`
@@ -224,4 +248,4 @@ const initDB = async () => {
   }
 };
 
-module.exports = { pool, initDB };
+module.exports = { pool, query, initDB };
