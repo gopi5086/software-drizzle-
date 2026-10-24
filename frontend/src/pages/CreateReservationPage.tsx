@@ -374,45 +374,45 @@ const CreateReservationPage: React.FC = () => {
   const roomTypes = formData.location === 'Chennai' ? roomTypesChennai : roomTypesOoty;
 
   return (
-    <div className="min-h-screen pb-20 animate-in fade-in duration-700 print:pb-0 print:min-h-0 print:animate-none">
-      <header className="flex justify-between items-center mb-8 sticky top-0 bg-background/80 backdrop-blur-md py-4 z-10 border-b border-border-subtle px-2">
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen pb-12 sm:pb-20 animate-in fade-in duration-700 print:pb-0 print:min-h-0 print:animate-none">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-8 sticky top-0 bg-background/80 backdrop-blur-md py-3 sm:py-4 z-10 border-b border-border-subtle px-2">
+        <div className="flex items-center gap-3 sm:gap-4">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-white rounded-full transition-colors border border-border-subtle"
+            className="p-1.5 sm:p-2 hover:bg-white rounded-full transition-colors border border-border-subtle shrink-0"
           >
-            <ArrowLeft className="w-5 h-5 text-primary" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           </button>
-          <div className="flex items-center gap-4">
-            <img src={logo} alt="Logo" className="h-8 w-8 object-contain" />
+          <div className="flex items-center gap-2.5 sm:gap-4">
+            <img src={logo} alt="Logo" className="h-6 w-6 sm:h-8 sm:w-8 object-contain shrink-0" />
             <div>
-              <h2 className="text-3xl font-black text-primary tracking-tight">{isEditMode ? 'Edit Quotation' : 'Quotation for Enquiry'}</h2>
-              <p className="text-xs font-bold text-soft-slate uppercase tracking-widest mt-1">Quotation Generator & Reservation Management</p>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-primary tracking-tight">{isEditMode ? 'Edit Quotation' : 'Quotation for Enquiry'}</h2>
+              <p className="text-[10px] sm:text-xs font-bold text-soft-slate uppercase tracking-widest mt-0.5 sm:mt-1">Quotation Generator & Reservation Management</p>
             </div>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap w-full sm:w-auto">
           <button
             onClick={() => setShowPreview(!showPreview)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${showPreview ? 'bg-elegant-gold text-deep-charcoal' : 'bg-white border border-border-subtle text-primary'}`}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${showPreview ? 'bg-elegant-gold text-deep-charcoal' : 'bg-white border border-border-subtle text-primary'}`}
           >
-            {showPreview ? <X className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+            {showPreview ? <X className="w-4 h-4 shrink-0" /> : <CheckCircle2 className="w-4 h-4 shrink-0" />}
             {showPreview ? 'Close Preview' : 'Live Preview'}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="self-start -mt-2 p-2 hover:bg-gray-100 rounded-full transition-colors border border-border-subtle text-primary"
-            title="Logout"
-          >
-            <LogOut className="w-5 h-5" />
           </button>
           <button
             form="reservation-form"
             type="submit"
-            className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3 bg-primary text-white rounded-xl font-bold text-xs sm:text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
           >
-            <Save className="w-4 h-4 text-elegant-gold" />
-            {isEditMode ? 'Update Quotation' : 'Save Quotation'}
+            <Save className="w-4 h-4 text-elegant-gold shrink-0" />
+            {isEditMode ? 'Update' : 'Save'}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="p-2 sm:p-2.5 hover:bg-gray-100 rounded-xl transition-colors border border-border-subtle text-primary shrink-0"
+            title="Logout"
+          >
+            <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </header>

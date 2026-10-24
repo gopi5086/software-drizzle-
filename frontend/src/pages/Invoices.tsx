@@ -246,47 +246,47 @@ const Invoices: React.FC = () => {
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="flex justify-between items-center">
+    <div className="space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-5xl font-bold text-primary tracking-tight">Billing & Invoices</h2>
-          <p className="text-soft-slate text-lg mt-2">Track revenue collection from reservations.</p>
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-primary tracking-tight">Billing & Invoices</h2>
+          <p className="text-soft-slate text-sm sm:text-lg mt-1 sm:mt-2">Track revenue collection from reservations.</p>
         </div>
-        <div className="flex gap-4">
-           <div className="relative">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto">
+           <div className="relative flex-1 sm:flex-initial min-w-[180px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-soft-slate w-4 h-4" />
               <input 
                 type="text" 
                 placeholder="Find invoice #..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                className="bg-white border border-border-subtle rounded-xl py-3 pl-12 pr-6 text-sm focus:ring-2 focus:ring-elegant-gold transition-all"
+                className="w-full bg-white border border-border-subtle rounded-xl py-2.5 sm:py-3 pl-11 sm:pl-12 pr-4 sm:pr-6 text-sm focus:ring-2 focus:ring-elegant-gold transition-all"
               />
            </div>
            <button
              onClick={handleExportCSV}
-             className="flex items-center gap-2 px-6 py-3 bg-white border border-border-subtle rounded-xl font-bold text-sm text-soft-slate hover:border-elegant-gold"
+             className="flex-1 sm:flex-initial justify-center flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white border border-border-subtle rounded-xl font-bold text-xs sm:text-sm text-soft-slate hover:border-elegant-gold whitespace-nowrap"
            >
-             <Download className="w-5 h-5" />
+             <Download className="w-4 h-4 sm:w-5 sm:h-5" />
              Export List
            </button>
            <button 
              onClick={() => setIsSummaryOpen(true)}
-             className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm"
+             className="flex-1 sm:flex-initial justify-center flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-primary text-white rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap shadow-sm"
            >
-             <FileText className="w-5 h-5" />
+             <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
              Monthly Summary
            </button>
         </div>
       </header>
 
       {/* Status Filter Tabs */}
-      <div className="flex gap-6 border-b border-border-subtle overflow-x-auto scrollbar-hide">
+      <div className="flex gap-4 sm:gap-6 border-b border-border-subtle overflow-x-auto scrollbar-hide py-1">
         {['All', 'Paid', 'Pending', 'Overdue'].map((tab) => (
           <button
             key={tab}
             onClick={() => { setStatusFilter(tab); setCurrentPage(1); }}
-            className={`pb-4 text-sm font-bold transition-all ${
+            className={`pb-3 sm:pb-4 text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
               statusFilter === tab
                 ? 'text-primary border-b-2 border-elegant-gold'
                 : 'text-soft-slate hover:text-primary'
@@ -300,30 +300,30 @@ const Invoices: React.FC = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-         <div className="glass-card p-8 rounded-3xl">
-            <CheckCircle2 className="w-8 h-8 text-green-600 mb-4" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+         <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
+            <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 mb-3 sm:mb-4" />
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Total Collected</p>
-            <p className="text-3xl font-bold text-primary mt-1">₹ {summary.totalCollected.toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">₹ {summary.totalCollected.toLocaleString()}</p>
          </div>
-         <div className="glass-card p-8 rounded-3xl">
-            <Clock className="w-8 h-8 text-yellow-600 mb-4" />
+         <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-3xl">
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600 mb-3 sm:mb-4" />
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Pending Payment</p>
-            <p className="text-3xl font-bold text-primary mt-1">₹ {summary.pendingPayment.toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">₹ {summary.pendingPayment.toLocaleString()}</p>
          </div>
-         <div className="glass-card p-8 rounded-3xl border-red-100">
-            <AlertCircle className="w-8 h-8 text-red-600 mb-4" />
+         <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-3xl border-red-100">
+            <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 mb-3 sm:mb-4" />
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Overdue</p>
-            <p className="text-3xl font-bold text-red-600 mt-1">₹ {summary.overdue.toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-red-600 mt-1">₹ {summary.overdue.toLocaleString()}</p>
          </div>
-         <div className="glass-card p-8 rounded-3xl bg-primary text-white">
-            <CreditCard className="w-8 h-8 text-elegant-gold mb-4" />
+         <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-primary text-white">
+            <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-elegant-gold mb-3 sm:mb-4" />
             <p className="text-[10px] font-bold text-elegant-gold uppercase tracking-widest">Total Invoices</p>
-            <p className="text-3xl font-bold mt-1">{summary.totalInvoices}</p>
+            <p className="text-2xl sm:text-3xl font-bold mt-1">{summary.totalInvoices}</p>
          </div>
       </div>
 
-      <div className="glass-card rounded-[2.5rem] overflow-hidden">
+      <div className="glass-card rounded-2xl sm:rounded-[2.5rem] overflow-hidden">
         {filtered.length === 0 ? (
           <div className="text-center py-20 text-soft-slate">
             <FileText className="w-12 h-12 mx-auto mb-4 opacity-30" />
@@ -332,38 +332,38 @@ const Invoices: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[720px]">
               <thead>
                 <tr className="bg-background text-soft-slate text-[10px] font-bold uppercase tracking-widest border-b border-border-subtle">
-                  <th className="px-8 py-6 text-left">Invoice ID</th>
-                  <th className="px-8 py-6 text-left">Customer</th>
-                  <th className="px-8 py-6 text-left">Billing Date</th>
-                  <th className="px-8 py-6 text-left">Amount</th>
-                  <th className="px-8 py-6 text-left">Payment Status</th>
-                  <th className="px-8 py-6 text-left">Method</th>
-                  <th className="px-8 py-6 text-right">Actions</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6 text-left">Invoice ID</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6 text-left">Customer</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6 text-left">Billing Date</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6 text-left">Amount</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6 text-left">Payment Status</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6 text-left">Method</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">
                 {paginated.map((inv) => (
                   <tr key={inv.id} className="hover:bg-background/20 transition-colors group">
-                    <td className="px-8 py-8">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8">
                        <span className="text-xs font-bold font-mono px-3 py-1 bg-background rounded-lg border border-border-subtle">
                           {inv.id}
                        </span>
                     </td>
-                    <td className="px-8 py-8">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8">
                        <p className="text-sm font-bold text-primary">{inv.client}</p>
                     </td>
-                    <td className="px-8 py-8">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8">
                        <div className="flex items-center gap-2 text-xs text-soft-slate font-medium">
                           <Clock className="w-4 h-4" /> {formatDate(inv.date)}
                        </div>
                     </td>
-                    <td className="px-8 py-8">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8">
                        <p className="text-sm font-bold text-primary">₹ {inv.amount.toLocaleString()}</p>
                     </td>
-                    <td className="px-8 py-8">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8">
                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase ${
                           inv.status === 'Paid' ? 'bg-green-50 text-green-600' : 
                           inv.status === 'Pending' ? 'bg-yellow-50 text-yellow-600' : 
@@ -372,13 +372,13 @@ const Invoices: React.FC = () => {
                           {inv.status}
                        </span>
                     </td>
-                    <td className="px-8 py-8">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8">
                        <div className="flex items-center gap-2 text-xs text-soft-slate font-bold">
                           <CreditCard className="w-4 h-4" /> {inv.method}
                        </div>
                     </td>
-                    <td className="px-8 py-8 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8 text-right">
+                      <div className="flex justify-end gap-1.5 sm:gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                          <button
                            onClick={() => handlePrintInvoice(inv)}
                            className="p-2 text-soft-slate hover:text-primary hover:bg-background rounded-lg transition-all"
@@ -412,22 +412,22 @@ const Invoices: React.FC = () => {
           </div>
         )}
         {filtered.length > 0 && (
-          <div className="p-10 bg-background/50 border-t border-border-subtle flex justify-between items-center">
-             <div className="text-sm text-soft-slate">
+          <div className="p-4 sm:p-10 bg-background/50 border-t border-border-subtle flex flex-col sm:flex-row justify-between items-center gap-4">
+             <div className="text-xs sm:text-sm text-soft-slate">
                 Showing <span className="font-bold text-primary">{(currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, filtered.length)}</span> of <span className="font-bold text-primary">{filtered.length}</span> Invoices
              </div>
              <div className="flex gap-2">
                 <button 
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="px-6 py-2 border border-border-subtle rounded-xl text-xs font-bold text-soft-slate hover:bg-white hover:text-primary transition-all disabled:opacity-30"
+                  className="px-4 sm:px-6 py-2 border border-border-subtle rounded-xl text-xs font-bold text-soft-slate hover:bg-white hover:text-primary transition-all disabled:opacity-30"
                 >
                   Previous
                 </button>
                 <button 
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage >= totalPages}
-                  className="px-6 py-2 border border-border-subtle rounded-xl text-xs font-bold text-primary bg-white shadow-sm hover:bg-background transition-all disabled:opacity-30"
+                  className="px-4 sm:px-6 py-2 border border-border-subtle rounded-xl text-xs font-bold text-primary bg-white shadow-sm hover:bg-background transition-all disabled:opacity-30"
                 >
                   Next
                 </button>
@@ -442,14 +442,14 @@ const Invoices: React.FC = () => {
         title="Monthly Billing Summary"
       >
         <div className="space-y-6">
-           <div className="grid grid-cols-2 gap-4">
-              <div className="p-6 bg-background rounded-2xl border border-border-subtle">
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="p-4 sm:p-6 bg-background rounded-2xl border border-border-subtle">
                  <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Invoices Issued</p>
-                 <p className="text-2xl font-bold text-primary mt-1">{summary.totalInvoices}</p>
+                 <p className="text-xl sm:text-2xl font-bold text-primary mt-1">{summary.totalInvoices}</p>
               </div>
-              <div className="p-6 bg-background rounded-2xl border border-border-subtle">
+              <div className="p-4 sm:p-6 bg-background rounded-2xl border border-border-subtle">
                  <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Net Revenue</p>
-                 <p className="text-2xl font-bold text-green-600 mt-1">₹ {summary.totalCollected.toLocaleString()}</p>
+                 <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">₹ {summary.totalCollected.toLocaleString()}</p>
               </div>
            </div>
 

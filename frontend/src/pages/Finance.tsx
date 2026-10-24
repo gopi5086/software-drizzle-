@@ -92,71 +92,71 @@ const Finance: React.FC = () => {
   const transactions = data?.transactions || [];
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="flex justify-between items-center">
+    <div className="space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-5xl font-bold text-primary tracking-tight">Finance Overview</h2>
-          <p className="text-soft-slate text-lg mt-2">Manage your hotel's revenue from reservations.</p>
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-primary tracking-tight">Finance Overview</h2>
+          <p className="text-soft-slate text-sm sm:text-lg mt-1 sm:mt-2">Manage your hotel's revenue from reservations.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-6 py-3 bg-white border border-soft-slate/20 rounded-xl font-bold text-sm text-soft-slate hover:border-elegant-gold transition-all"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white border border-soft-slate/20 rounded-xl font-bold text-xs sm:text-sm text-soft-slate hover:border-elegant-gold transition-all whitespace-nowrap"
           >
             <Download className="w-4 h-4" /> Export List
           </button>
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-6 py-3 bg-white border border-soft-slate/20 rounded-xl font-bold text-sm text-soft-slate hover:border-elegant-gold transition-all"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white border border-soft-slate/20 rounded-xl font-bold text-xs sm:text-sm text-soft-slate hover:border-elegant-gold transition-all whitespace-nowrap"
           >
             <Download className="w-4 h-4" /> Export PDF
           </button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-deep-charcoal p-8 rounded-3xl text-white relative overflow-hidden group">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <div className="bg-deep-charcoal p-5 sm:p-8 rounded-2xl sm:rounded-3xl text-white relative overflow-hidden group">
           <div className="relative z-10">
-            <p className="text-elegant-gold text-[10px] font-bold uppercase tracking-[0.2em] mb-4">Total Collected</p>
-            <h3 className="text-4xl font-bold">₹ {(data?.currentBalance || 0).toLocaleString()}</h3>
+            <p className="text-elegant-gold text-[10px] font-bold uppercase tracking-[0.2em] mb-2 sm:mb-4">Total Collected</p>
+            <h3 className="text-2xl sm:text-4xl font-bold">₹ {(data?.currentBalance || 0).toLocaleString()}</h3>
           </div>
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <DollarSign className="w-32 h-32" />
+            <DollarSign className="w-24 h-24 sm:w-32 sm:h-32" />
           </div>
         </div>
 
-        <div className="glass-card p-8 rounded-3xl flex flex-col justify-between">
+        <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-3xl flex flex-col justify-between">
           <div className="flex justify-between items-start">
-             <div className="p-3 bg-green-50 rounded-xl text-green-600">
-                <ArrowUpRight className="w-6 h-6" />
+             <div className="p-2.5 sm:p-3 bg-green-50 rounded-xl text-green-600">
+                <ArrowUpRight className="w-5 h-5 sm:w-6 sm:h-6" />
              </div>
           </div>
-          <div>
+          <div className="mt-4 sm:mt-0">
             <p className="text-soft-slate text-[10px] font-bold uppercase tracking-widest">Monthly Income</p>
-            <p className="text-3xl font-bold text-primary mt-1">₹ {(data?.monthlyIncome || 0).toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">₹ {(data?.monthlyIncome || 0).toLocaleString()}</p>
           </div>
         </div>
 
-        <div className="glass-card p-8 rounded-3xl flex flex-col justify-between">
+        <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-3xl flex flex-col justify-between">
           <div className="flex justify-between items-start">
-             <div className="p-3 bg-yellow-50 rounded-xl text-yellow-600">
-                <ArrowDownRight className="w-6 h-6" />
+             <div className="p-2.5 sm:p-3 bg-yellow-50 rounded-xl text-yellow-600">
+                <ArrowDownRight className="w-5 h-5 sm:w-6 sm:h-6" />
              </div>
           </div>
-          <div>
+          <div className="mt-4 sm:mt-0">
             <p className="text-soft-slate text-[10px] font-bold uppercase tracking-widest">Pending Collection</p>
-            <p className="text-3xl font-bold text-primary mt-1">₹ {(data?.pendingAmount || 0).toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">₹ {(data?.pendingAmount || 0).toLocaleString()}</p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-12 gap-4 sm:gap-6">
         <div className="col-span-12 lg:col-span-8 glass-card rounded-2xl overflow-hidden">
-          <div className="p-8 border-b border-border-subtle flex justify-between items-center">
-            <h3 className="text-xl font-bold text-primary">Recent Transactions</h3>
+          <div className="p-4 sm:p-8 border-b border-border-subtle flex justify-between items-center">
+            <h3 className="text-lg sm:text-xl font-bold text-primary">Recent Transactions</h3>
             <button 
               onClick={handleExportCSV}
-              className="text-xs font-bold text-elegant-gold flex items-center gap-2"
+              className="text-xs font-bold text-elegant-gold flex items-center gap-1.5 sm:gap-2"
             >
               <History className="w-4 h-4" /> Export History
             </button>
@@ -167,35 +167,35 @@ const Finance: React.FC = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[500px]">
                 <thead>
                   <tr className="bg-background text-soft-slate text-[10px] font-bold uppercase tracking-widest border-b border-border-subtle">
-                    <th className="px-8 py-4 text-left">Source</th>
-                    <th className="px-8 py-4 text-left">Date</th>
-                    <th className="px-8 py-4 text-left">Status</th>
-                    <th className="px-8 py-4 text-right">Amount</th>
+                    <th className="px-4 sm:px-8 py-3 sm:py-4 text-left">Source</th>
+                    <th className="px-4 sm:px-8 py-3 sm:py-4 text-left">Date</th>
+                    <th className="px-4 sm:px-8 py-3 sm:py-4 text-left">Status</th>
+                    <th className="px-4 sm:px-8 py-3 sm:py-4 text-right">Amount</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-subtle">
                   {transactions.map((tx) => (
                     <tr key={tx.id} className="hover:bg-background/50 transition-colors group">
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-green-50 text-green-600">
-                            <ArrowUpRight className="w-4 h-4" />
+                      <td className="px-4 sm:px-8 py-4 sm:py-6">
+                        <div className="flex items-center gap-2.5 sm:gap-3">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center bg-green-50 text-green-600">
+                            <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </div>
-                          <span className="text-sm font-bold text-primary">{tx.user}</span>
+                          <span className="text-xs sm:text-sm font-bold text-primary">{tx.user}</span>
                         </div>
                       </td>
-                      <td className="px-8 py-6 text-sm text-soft-slate">{formatDate(tx.date)}</td>
-                      <td className="px-8 py-6">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+                      <td className="px-4 sm:px-8 py-4 sm:py-6 text-xs sm:text-sm text-soft-slate">{formatDate(tx.date)}</td>
+                      <td className="px-4 sm:px-8 py-4 sm:py-6">
+                        <span className={`px-2.5 sm:px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
                           tx.status === 'Completed' ? 'bg-green-50 text-green-600' : 'bg-yellow-50 text-yellow-600'
                         }`}>
                           {tx.status}
                         </span>
                       </td>
-                      <td className="px-8 py-6 text-right font-bold text-sm text-green-600">
+                      <td className="px-4 sm:px-8 py-4 sm:py-6 text-right font-bold text-xs sm:text-sm text-green-600">
                         +₹ {tx.amount.toFixed(2)}
                       </td>
                     </tr>
@@ -206,32 +206,32 @@ const Finance: React.FC = () => {
           )}
         </div>
 
-        <div className="col-span-12 lg:col-span-4 space-y-6">
-           <div className="glass-card p-8 rounded-2xl">
-              <div className="flex justify-between items-center mb-6">
+        <div className="col-span-12 lg:col-span-4 space-y-4 sm:space-y-6">
+           <div className="glass-card p-5 sm:p-8 rounded-2xl">
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
                 <h3 className="font-bold text-primary">Revenue Split</h3>
                 <PieChart className="w-5 h-5 text-elegant-gold" />
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                   <div className="flex items-center gap-2">
-                     <div className="w-2 h-2 rounded-full bg-elegant-gold" />
-                     <span className="text-xs text-soft-slate">Room Booking</span>
-                   </div>
-                   <span className="text-xs font-bold text-primary">100%</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-elegant-gold" />
+                      <span className="text-xs text-soft-slate">Room Booking</span>
+                    </div>
+                    <span className="text-xs font-bold text-primary">100%</span>
                 </div>
                 <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
-                   <div className="h-full bg-elegant-gold" style={{ width: '100%' }} />
+                    <div className="h-full bg-elegant-gold" style={{ width: '100%' }} />
                 </div>
               </div>
            </div>
 
-           <div className="glass-card p-8 rounded-2xl bg-elegant-gold/5 border-elegant-gold/20">
-              <div className="flex items-center gap-3 mb-4">
-                 <TrendingUp className="w-6 h-6 text-elegant-gold" />
+           <div className="glass-card p-5 sm:p-8 rounded-2xl bg-elegant-gold/5 border-elegant-gold/20">
+              <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                 <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-elegant-gold" />
                  <h3 className="font-bold text-primary">Summary</h3>
               </div>
-              <p className="text-sm text-soft-slate leading-relaxed">
+              <p className="text-xs sm:text-sm text-soft-slate leading-relaxed">
                 {transactions.length > 0
                   ? `You have ${transactions.length} reservation${transactions.length !== 1 ? 's' : ''} recorded with ₹ ${(data?.monthlyIncome || 0).toLocaleString()} collected this month.`
                   : 'Add reservations to start tracking your hotel revenue.'}

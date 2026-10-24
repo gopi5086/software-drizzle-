@@ -125,40 +125,40 @@ const Staff: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="flex justify-between items-center">
+    <div className="space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-5xl font-bold text-primary tracking-tight">Staff Management</h2>
-          <p className="text-soft-slate text-lg mt-2">Manage team accounts, roles, branch locations, and shift assignments.</p>
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-primary tracking-tight">Staff Management</h2>
+          <p className="text-soft-slate text-sm sm:text-lg mt-1 sm:mt-2">Manage team accounts, roles, branch locations, and shift assignments.</p>
         </div>
         <button 
            onClick={() => setIsModalOpen(true)}
-           className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
+           className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
         >
            <UserPlus className="w-5 h-5" />
            Create Staff Login
         </button>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <div className="glass-card p-8 rounded-3xl">
-            <Users className="w-8 h-8 text-primary mb-4" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+         <div className="glass-card p-4 sm:p-8 rounded-2xl sm:rounded-3xl">
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-primary mb-3 sm:mb-4" />
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Total Staff</p>
-            <p className="text-3xl font-bold text-primary mt-1">{stats.totalStaff} Active</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">{stats.totalStaff} Active</p>
          </div>
-         <div className="glass-card p-8 rounded-3xl">
-            <ShieldCheck className="w-8 h-8 text-green-600 mb-4" />
+         <div className="glass-card p-4 sm:p-8 rounded-2xl sm:rounded-3xl">
+            <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 mb-3 sm:mb-4" />
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Admins</p>
-            <p className="text-3xl font-bold text-primary mt-1">{stats.adminCount}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">{stats.adminCount}</p>
          </div>
-         <div className="glass-card p-8 rounded-3xl">
-            <Clock className="w-8 h-8 text-elegant-gold mb-4" />
+         <div className="glass-card p-4 sm:p-8 rounded-2xl sm:rounded-3xl">
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-elegant-gold mb-3 sm:mb-4" />
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Active Accounts</p>
-            <p className="text-3xl font-bold text-primary mt-1">{stats.activeCount}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">{stats.activeCount}</p>
          </div>
       </div>
 
-      <div className="glass-card rounded-[2.5rem] overflow-hidden">
+      <div className="glass-card rounded-2xl sm:rounded-[2.5rem] overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-elegant-gold" />
@@ -170,22 +170,22 @@ const Staff: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left min-w-[640px]">
               <thead>
                 <tr className="bg-background text-soft-slate text-[10px] font-bold uppercase tracking-widest border-b border-border-subtle">
-                  <th className="px-8 py-6">Member</th>
-                  <th className="px-8 py-6">Role</th>
-                  <th className="px-8 py-6">Branch Location</th>
-                  <th className="px-8 py-6">Status</th>
-                  <th className="px-8 py-6 text-right">Actions</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6">Member</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6">Role</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6">Branch Location</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6">Status</th>
+                  <th className="px-4 sm:px-8 py-4 sm:py-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">
                 {staffList.map((member) => (
                   <tr key={member.id} className="hover:bg-background/20 transition-colors group">
-                    <td className="px-8 py-8">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white border border-border-subtle flex items-center justify-center text-primary shadow-sm font-bold">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white border border-border-subtle flex items-center justify-center text-primary shadow-sm font-bold text-xs sm:text-sm">
                           {member.full_name.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div>
@@ -194,35 +194,35 @@ const Staff: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-8">
-                      <span className="px-3 py-1 bg-primary/5 rounded-lg border border-primary/10 text-sm font-medium text-primary capitalize">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8">
+                      <span className="px-3 py-1 bg-primary/5 rounded-lg border border-primary/10 text-xs sm:text-sm font-medium text-primary capitalize">
                         {member.role}
                       </span>
                     </td>
-                    <td className="px-8 py-8">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8">
                       <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-bold flex items-center gap-1.5 w-max">
                         <MapPin className="w-3.5 h-3.5" />
                         {member.branch_location || 'Chennai'}
                       </span>
                     </td>
-                    <td className="px-8 py-8">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8">
                       <div className="flex items-center gap-2">
                          <div className={`w-2 h-2 rounded-full ${member.status === 'active' ? 'bg-green-500 shadow-sm shadow-green-500/50' : 'bg-gray-300'}`} />
                          <span className="text-xs font-bold text-primary capitalize">{member.status}</span>
                       </div>
                     </td>
-                    <td className="px-8 py-8 text-right">
+                    <td className="px-4 sm:px-8 py-4 sm:py-8 text-right">
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => handleEdit(member)}
-                          className="p-3 text-soft-slate hover:text-primary bg-background/50 rounded-xl transition-all hover:scale-105"
+                          className="p-2.5 sm:p-3 text-soft-slate hover:text-primary bg-background/50 rounded-xl transition-all hover:scale-105"
                           title="Edit staff"
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(member.id)}
-                          className="p-3 text-red-400 hover:text-red-500 bg-red-50 rounded-xl transition-all hover:scale-105"
+                          className="p-2.5 sm:p-3 text-red-400 hover:text-red-500 bg-red-50 rounded-xl transition-all hover:scale-105"
                           title="Delete staff"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -270,7 +270,7 @@ const Staff: React.FC = () => {
                  </div>
                  {editingStaff && <p className="text-[9px] text-red-500 font-bold uppercase mt-1 ml-1">Staff ID / Email cannot be changed once created</p>}
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                  <div className="space-y-2">
                     <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest pl-1">System Role</label>
                     <select 
@@ -292,7 +292,7 @@ const Staff: React.FC = () => {
                     />
                  </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest pl-1">Phone Number</label>
                     <input 

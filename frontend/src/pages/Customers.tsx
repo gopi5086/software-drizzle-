@@ -155,49 +155,49 @@ const Customers: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="flex justify-between items-center">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
         <div>
-          <h2 className="text-5xl font-bold text-primary tracking-tight">Customer Directory</h2>
-          <p className="text-soft-slate text-lg mt-2">Manage your guest profiles and loyalty programs.</p>
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-primary tracking-tight">Customer Directory</h2>
+          <p className="text-soft-slate text-sm sm:text-base md:text-lg mt-1 sm:mt-2">Manage your guest profiles and loyalty programs.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-6 py-3 bg-white border border-soft-slate/20 rounded-xl font-bold text-sm text-soft-slate hover:border-elegant-gold hover:text-elegant-gold transition-all"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-6 py-2.5 sm:py-3 bg-white border border-soft-slate/20 rounded-xl font-bold text-xs sm:text-sm text-soft-slate hover:border-elegant-gold hover:text-elegant-gold transition-all shadow-sm"
           >
-            <Download className="w-4 h-4" />
-            Export List
+            <Download className="w-4 h-4 shrink-0" />
+            Export CSV
           </button>
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-6 py-3 bg-white border border-soft-slate/20 rounded-xl font-bold text-sm text-soft-slate hover:border-elegant-gold hover:text-elegant-gold transition-all"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-6 py-2.5 sm:py-3 bg-white border border-soft-slate/20 rounded-xl font-bold text-xs sm:text-sm text-soft-slate hover:border-elegant-gold hover:text-elegant-gold transition-all shadow-sm"
           >
-            <FileText className="w-4 h-4" />
+            <FileText className="w-4 h-4 shrink-0" />
             Export PDF
           </button>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-elegant-gold text-deep-charcoal rounded-xl font-bold text-sm shadow-xl shadow-elegant-gold/20 hover:scale-[1.02] transition-transform"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-elegant-gold text-deep-charcoal rounded-xl font-bold text-xs sm:text-sm shadow-xl shadow-elegant-gold/20 hover:scale-[1.02] transition-transform"
           >
-            <UserPlus className="w-5 h-5" />
-            Add New Guest
+            <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+            Add Guest
           </button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <div className="glass-card p-6 rounded-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+         <div className="glass-card p-4 sm:p-6 rounded-2xl">
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest mb-1">Total Guests</p>
-            <p className="text-3xl font-bold text-primary">{stats.totalGuests.toLocaleString()}</p>
-            <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-bold">
-               <Users className="w-4 h-4" /> +{stats.newThisWeek} this week
+            <p className="text-2xl sm:text-3xl font-bold text-primary">{stats.totalGuests.toLocaleString()}</p>
+            <div className="mt-3 sm:mt-4 flex items-center gap-2 text-xs text-green-600 font-bold">
+               <Users className="w-4 h-4 shrink-0" /> +{stats.newThisWeek} this week
             </div>
          </div>
-         <div className="glass-card p-6 rounded-2xl">
+         <div className="glass-card p-4 sm:p-6 rounded-2xl">
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest mb-1">Returning Guests</p>
-            <p className="text-3xl font-bold text-primary">{stats.returningGuests.toLocaleString()}</p>
-            <div className="mt-4 w-full h-1.5 bg-background rounded-full">
+            <p className="text-2xl sm:text-3xl font-bold text-primary">{stats.returningGuests.toLocaleString()}</p>
+            <div className="mt-3 sm:mt-4 w-full h-1.5 bg-background rounded-full">
                <div
                  className="h-full bg-elegant-gold rounded-full"
                  style={{ width: stats.totalGuests > 0 ? `${Math.round((stats.returningGuests / stats.totalGuests) * 100)}%` : '0%' }}

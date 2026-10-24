@@ -314,20 +314,20 @@ const ChennaiEnquiryPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pb-20 animate-in fade-in duration-500">
+    <div className="min-h-screen pb-12 sm:pb-20 animate-in fade-in duration-500">
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-8 w-[90%] max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 w-[92%] sm:w-[90%] max-w-md shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
                 <Building2 className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-black text-gray-900">Confirm Chennai Enquiry</h3>
+                <h3 className="font-black text-gray-900 text-base sm:text-lg">Confirm Chennai Enquiry</h3>
                 <p className="text-xs text-gray-400">Review details before saving</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm mb-6">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 text-sm mb-4 sm:mb-6">
               {[
                 ['Guest', formData.guestName],
                 ['Phone', formData.guestPhone],
@@ -336,36 +336,36 @@ const ChennaiEnquiryPage: React.FC = () => {
                 ['Rooms', `${totalRooms} room(s)`],
                 ['Nights', nights.toString()],
               ].map(([label, val]) => (
-                <div key={label} className="bg-gray-50 p-3 rounded-xl">
+                <div key={label} className="bg-gray-50 p-2.5 sm:p-3 rounded-xl">
                   <p className="text-[10px] text-gray-400 uppercase font-bold">{label}</p>
-                  <p className="font-bold text-gray-800 mt-0.5">{val}</p>
+                  <p className="font-bold text-gray-800 text-xs sm:text-sm mt-0.5 truncate">{val}</p>
                 </div>
               ))}
             </div>
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl mb-6">
-              <div className="flex justify-between text-sm mb-2">
+            <div className="bg-blue-50 border border-blue-200 p-3.5 sm:p-4 rounded-2xl mb-4 sm:mb-6">
+              <div className="flex justify-between text-xs sm:text-sm mb-1.5 sm:mb-2">
                 <span className="text-gray-500">Stay Cost</span>
                 <span className="font-bold">₹ {stayCost.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-sm mb-2">
+              <div className="flex justify-between text-xs sm:text-sm mb-1.5 sm:mb-2">
                 <span className="text-gray-500">Total</span>
                 <span className="font-bold">₹ {totalCost.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-base font-black pt-2 border-t border-blue-200">
+              <div className="flex justify-between text-sm sm:text-base font-black pt-2 border-t border-blue-200">
                 <span className="text-blue-700">Balance Due</span>
                 <span className="text-blue-700">₹ {balanceDue.toLocaleString()}</span>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2.5 sm:gap-3">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="flex-1 py-3 rounded-xl border border-gray-200 font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                className="flex-1 py-2.5 sm:py-3 rounded-xl border border-gray-200 font-bold text-xs sm:text-sm text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 Edit
               </button>
               <button
                 onClick={handleConfirmSave}
-                className="flex-1 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 sm:py-3 rounded-xl bg-blue-600 text-white font-bold text-xs sm:text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                 Confirm & Save
@@ -375,23 +375,23 @@ const ChennaiEnquiryPage: React.FC = () => {
         </div>
       )}
 
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100 py-4 px-6 mb-8 flex justify-between items-center">
-        <div className="flex items-center gap-4">
+      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100 py-3 sm:py-4 px-3 sm:px-6 mb-4 sm:mb-8 flex justify-between items-center">
+        <div className="flex items-center gap-3 sm:gap-4">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors border border-gray-200"
+            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors border border-gray-200 shrink-0"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
           </button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <Building2 className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/30 shrink-0">
+              <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+              <h2 className="text-base sm:text-2xl font-black text-gray-900 tracking-tight">
                 {editReservationId ? 'Edit Chennai Reservation' : isEditMode ? 'Edit Chennai Enquiry' : 'Chennai Enquiry Registration'}
               </h2>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">City Branch · Location: Chennai</p>
+              <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">City Branch · Location: Chennai</p>
             </div>
           </div>
         </div>
@@ -399,34 +399,34 @@ const ChennaiEnquiryPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 mb-8">
-        <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-3xl p-6 overflow-hidden shadow-xl">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 mb-4 sm:mb-8">
+        <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 overflow-hidden shadow-xl">
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
           <div className="relative flex items-center justify-between">
             <div>
-              <p className="text-blue-200 text-xs font-bold uppercase tracking-widest mb-1">Drizzle Drop Inn</p>
-              <h3 className="text-white text-2xl font-black">Chennai City Branch</h3>
-              <p className="text-blue-200 text-sm mt-1">
+              <p className="text-blue-200 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-0.5 sm:mb-1">Drizzle Drop Inn</p>
+              <h3 className="text-white text-xl sm:text-2xl font-black">Chennai City Branch</h3>
+              <p className="text-blue-200 text-xs sm:text-sm mt-0.5 sm:mt-1">
                 {editReservationId ? 'Update reservation details and quotation for guest stay' : 'Complete enquiry registration for guest stay'}
               </p>
             </div>
-            <Building2 className="w-16 h-16 text-white/20" />
+            <Building2 className="w-12 h-12 sm:w-16 sm:h-16 text-white/20 shrink-0" />
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4">
         {showPreview && (
-          <div className="mb-6 rounded-3xl border border-blue-100 bg-white p-4 shadow-sm overflow-hidden">
+          <div className="mb-6 rounded-2xl sm:rounded-3xl border border-blue-100 bg-white p-3 sm:p-4 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Invoice Preview</h3>
+                <h3 className="text-xs sm:text-sm font-black text-gray-800 uppercase tracking-widest">Invoice Preview</h3>
                 <p className="text-[10px] text-gray-400 font-bold">Live quotation as it will appear on the final invoice</p>
               </div>
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 font-bold text-xs hover:bg-gray-100 transition-colors"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 font-bold text-xs hover:bg-gray-100 transition-colors"
               >
                 Print Invoice
               </button>
@@ -437,8 +437,8 @@ const ChennaiEnquiryPage: React.FC = () => {
           </div>
         )}
 
-        <form id="chennai-form" onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-6">
+        <form id="chennai-form" onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8 space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
               <User className="w-4 h-4 text-blue-600" />
               <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Guest Details</h3>
@@ -516,7 +516,7 @@ const ChennaiEnquiryPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8 space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
               <Calendar className="w-4 h-4 text-blue-600" />
               <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Stay Information</h3>
@@ -524,63 +524,63 @@ const ChennaiEnquiryPage: React.FC = () => {
                 <MapPin className="w-3 h-3" /> Chennai
               </span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Check-In Date *</label>
                 <input
                   required type="date"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={formData.checkIn}
                   onChange={e => setFormData(p => ({ ...p, checkIn: e.target.value }))}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Check-Out Date *</label>
                 <input
                   required type="date"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={formData.checkOut}
                   onChange={e => setFormData(p => ({ ...p, checkOut: e.target.value }))}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Check-In Time</label>
                 <input
                   type="text" placeholder="12:00 Noon"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={formData.checkInTime}
                   onChange={e => setFormData(p => ({ ...p, checkInTime: e.target.value }))}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Check-Out Time</label>
                 <input
                   type="text" placeholder="11:00 A.M"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={formData.checkOutTime}
                   onChange={e => setFormData(p => ({ ...p, checkOutTime: e.target.value }))}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Adults *</label>
                 <div className="relative">
                   <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="number" min="1"
                     placeholder="1"
-                    className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 pl-11 pr-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
+                    className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 pl-11 pr-4 sm:pr-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
                     value={formData.adults}
                     onChange={e => setFormData(p => ({ ...p, adults: e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0) }))}
                     onFocus={e => e.target.select()}
                   />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Children</label>
                 <input
                   type="number" min="0"
                   placeholder="0"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
                   value={formData.children}
                   onChange={e => setFormData(p => ({ ...p, children: e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0) }))}
                   onFocus={e => e.target.select()}
@@ -589,24 +589,24 @@ const ChennaiEnquiryPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-5">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8 space-y-4 sm:space-y-5">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
               <Home className="w-4 h-4 text-blue-600" />
               <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Room Configuration</h3>
               <button
                 type="button"
                 onClick={addRoom}
-                className="ml-auto flex items-center gap-1 text-[10px] font-black text-blue-600 uppercase bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
+                className="ml-auto flex items-center gap-1 text-[10px] font-black text-blue-600 uppercase bg-blue-50 px-2.5 sm:px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors shrink-0"
               >
                 <Plus className="w-3 h-3" /> Add Room Type
               </button>
             </div>
             {formData.rooms.map((room, i) => (
-              <div key={i} className="grid grid-cols-12 gap-3 items-end bg-gray-50 p-4 rounded-2xl border border-gray-100 relative">
+              <div key={i} className="grid grid-cols-12 gap-3 items-end bg-gray-50 p-3 sm:p-4 rounded-2xl border border-gray-100 relative">
                 <div className="col-span-12 md:col-span-5 space-y-1">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Room Category</label>
                   <select
-                    className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
+                    className="w-full bg-white border border-gray-200 rounded-xl py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
                     value={room.type}
                     onChange={e => updateRoom(i, 'type', e.target.value)}
                   >
@@ -618,7 +618,7 @@ const ChennaiEnquiryPage: React.FC = () => {
                   <input
                     type="number" min="1"
                     placeholder="1"
-                    className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
+                    className="w-full bg-white border border-gray-200 rounded-xl py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
                     value={room.count}
                     onChange={e => updateRoom(i, 'count', e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0))}
                     onFocus={e => e.target.select()}
@@ -629,7 +629,7 @@ const ChennaiEnquiryPage: React.FC = () => {
                   <input
                     type="number" min="0"
                     placeholder="0"
-                    className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
+                    className="w-full bg-white border border-gray-200 rounded-xl py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
                     value={room.rate}
                     onChange={e => updateRoom(i, 'rate', e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0))}
                     onFocus={e => e.target.select()}
@@ -650,16 +650,16 @@ const ChennaiEnquiryPage: React.FC = () => {
             ))}
           </div>
 
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8 space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
               <Coffee className="w-4 h-4 text-blue-600" />
               <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Inclusions & Add-ons</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Meal Plan</label>
                 <select
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
                   value={formData.breakfast}
                   onChange={e => setFormData(p => ({ ...p, breakfast: e.target.value }))}
                 >
@@ -669,74 +669,74 @@ const ChennaiEnquiryPage: React.FC = () => {
                   <option value="MAP">MAP</option>
                 </select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Breakfast Amount (₹)</label>
                 <input
                   type="number" min="0"
                   placeholder="0"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={formData.breakfastAmount}
                   onChange={e => setFormData(p => ({ ...p, breakfastAmount: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0) }))}
                   onFocus={e => e.target.select()}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Early Check-in Amount (₹)</label>
                 <input
                   type="number" min="0"
                   placeholder="0"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={formData.earlyCheckinAmount}
                   onChange={e => setFormData(p => ({ ...p, earlyCheckinAmount: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0) }))}
                   onFocus={e => e.target.select()}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Late Check-out Amount (₹)</label>
                 <input
                   type="number" min="0"
                   placeholder="0"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={formData.lateCheckoutAmount}
                   onChange={e => setFormData(p => ({ ...p, lateCheckoutAmount: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0) }))}
                   onFocus={e => e.target.select()}
                 />
               </div>
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-1.5 sm:space-y-2 md:col-span-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Special Requirements</label>
                 <textarea
                   placeholder="Any special requests for the Chennai stay..."
                   rows={2}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={formData.specialRequirements}
                   onChange={e => setFormData(p => ({ ...p, specialRequirements: e.target.value }))}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Special Requirements Amount (₹)</label>
                 <input
                   type="number" min="0"
                   placeholder="0"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={formData.specialRequirementsAmount}
                   onChange={e => setFormData(p => ({ ...p, specialRequirementsAmount: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0) }))}
                   onFocus={e => e.target.select()}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Comments</label>
                 <textarea
                   placeholder="Internal notes or follow-up comments for this enquiry..."
                   rows={2}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={formData.comments}
                   onChange={e => setFormData(p => ({ ...p, comments: e.target.value }))}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Booked By</label>
                 <select
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
                   value={formData.bookedBy}
                   onChange={e => setFormData(p => ({ ...p, bookedBy: e.target.value }))}
                 >
@@ -749,45 +749,45 @@ const ChennaiEnquiryPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8 space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
               <CreditCard className="w-4 h-4 text-blue-600" />
               <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Payment</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rate (₹ / Night)</label>
                 <input
                   type="text"
                   readOnly
-                  className="w-full bg-gray-100 border border-gray-200 rounded-xl py-4 px-5 text-sm text-gray-700 font-bold"
+                  className="w-full bg-gray-100 border border-gray-200 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm text-gray-700 font-bold"
                   value={ratePerNight.toLocaleString('en-IN')}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Net Pay (₹)</label>
                 <input
                   type="text"
                   readOnly
-                  className="w-full bg-gray-100 border border-gray-200 rounded-xl py-4 px-5 text-sm text-gray-700 font-bold"
+                  className="w-full bg-gray-100 border border-gray-200 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm text-gray-700 font-bold"
                   value={totalCost.toLocaleString('en-IN')}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Advance Received (₹)</label>
                 <input
                   type="number" min="0"
                   placeholder="0"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
                   value={formData.advance}
                   onChange={e => setFormData(p => ({ ...p, advance: e.target.value === '' ? '' : Math.max(0, parseFloat(e.target.value) || 0) }))}
                   onFocus={e => e.target.select()}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Booking Status</label>
                 <select
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-4 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 sm:py-4 px-4 sm:px-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold"
                   value={formData.status}
                   onChange={e => setFormData(p => ({ ...p, status: e.target.value }))}
                 >
@@ -799,15 +799,15 @@ const ChennaiEnquiryPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-3xl p-8 text-white shadow-xl shadow-blue-700/30">
-            <div className="flex items-center gap-2 mb-5">
+          <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl shadow-blue-700/30">
+            <div className="flex items-center gap-2 mb-4 sm:mb-5">
               <Calculator className="w-4 h-4 text-blue-200" />
               <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest">Cost Summary</p>
             </div>
-            <div className="space-y-3 text-sm">
+            <div className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm">
               <div className="flex justify-between">
                 <span className="text-white/60">Nights</span>
-                <span className="font-black text-lg">{nights}</span>
+                <span className="font-black text-base sm:text-lg">{nights}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-white/60">Room Cost ({totalRooms} room × {nights} nights)</span>
@@ -822,28 +822,28 @@ const ChennaiEnquiryPage: React.FC = () => {
                 <span className="font-bold">₹ {Number(formData.advance || 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center border-t border-white/20 pt-3 mt-2">
-                <span className="text-blue-200 font-black uppercase tracking-widest text-xs">Balance Due at Hotel</span>
-                <span className="text-3xl font-black text-blue-200">₹ {balanceDue.toLocaleString()}</span>
+                <span className="text-blue-200 font-black uppercase tracking-widest text-[10px] sm:text-xs">Balance Due at Hotel</span>
+                <span className="text-2xl sm:text-3xl font-black text-blue-200">₹ {balanceDue.toLocaleString()}</span>
               </div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-center gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2">
             <button
               type="button"
               onClick={() => setShowPreview(prev => !prev)}
-              className="flex items-center gap-2 px-8 py-4 border-2 border-blue-200 bg-white text-blue-700 rounded-2xl font-bold text-sm shadow-sm hover:bg-blue-50 hover:border-blue-300 transition-all hover:scale-[1.02]"
+              className="w-full sm:w-auto justify-center flex items-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 border-2 border-blue-200 bg-white text-blue-700 rounded-2xl font-bold text-xs sm:text-sm shadow-sm hover:bg-blue-50 hover:border-blue-300 transition-all hover:scale-[1.02]"
             >
-              <FileText className="w-5 h-5" />
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
               {showPreview ? 'Hide Preview' : 'Preview Invoice'}
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 px-10 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-600/25 hover:bg-blue-700 hover:scale-[1.02] transition-all disabled:opacity-60"
+              className="w-full sm:w-auto justify-center flex items-center gap-2 px-6 sm:px-10 py-3.5 sm:py-4 bg-blue-600 text-white rounded-2xl font-bold text-xs sm:text-sm shadow-xl shadow-blue-600/25 hover:bg-blue-700 hover:scale-[1.02] transition-all disabled:opacity-60"
             >
-              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+              {saving ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin shrink-0" /> : <Save className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />}
               Register Enquiry
             </button>
           </div>

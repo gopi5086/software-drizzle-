@@ -80,36 +80,36 @@ const GuestLookupPage: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center p-6"
+      className="min-h-screen flex flex-col items-center justify-center p-3.5 sm:p-6"
       style={{ background: '#ffffff' }}
     >
       {/* Header branding */}
-      <div className="mb-10 text-center">
+      <div className="mb-6 sm:mb-10 text-center">
         <div
-          className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg"
+          className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl mb-3 sm:mb-4 shadow-lg"
           style={{ background: '#1a1a2e' }}
         >
-          <Phone className="w-8 h-8" style={{ color: '#D4AF37' }} />
+          <Phone className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: '#D4AF37' }} />
         </div>
-        <h1 className="text-3xl font-black tracking-tight" style={{ color: '#1a1a2e' }}>
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: '#1a1a2e' }}>
           Guest Phone Lookup
         </h1>
-        <p className="text-sm text-gray-500 mt-1 uppercase tracking-widest font-semibold">
+        <p className="text-xs sm:text-sm text-gray-500 mt-1 uppercase tracking-widest font-semibold">
           Auto-fetch guest details from database
         </p>
       </div>
 
       {/* Main card */}
-      <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-gray-100 p-10">
+      <div className="w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-100 p-5 sm:p-10">
 
         {/* Phone input form */}
-        <form onSubmit={handleSearch} className="space-y-5">
-          <div className="space-y-2">
+        <form onSubmit={handleSearch} className="space-y-4 sm:space-y-5">
+          <div className="space-y-1.5 sm:space-y-2">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
               Enter Guest Phone Number
             </label>
             <div className="relative flex items-center">
-              <Phone className="absolute left-4 w-5 h-5 text-gray-400 pointer-events-none" />
+              <Phone className="absolute left-4 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
               <input
                 ref={inputRef}
                 type="tel"
@@ -121,7 +121,7 @@ const GuestLookupPage: React.FC = () => {
                   setGuestFound(null);
                   setNotFound(false);
                 }}
-                className="w-full pl-12 pr-12 py-4 text-lg font-bold border-2 border-gray-200 rounded-2xl focus:outline-none transition-all placeholder:font-normal placeholder:text-gray-300"
+                className="w-full pl-11 sm:pl-12 pr-11 sm:pr-12 py-3 sm:py-4 text-base sm:text-lg font-bold border-2 border-gray-200 rounded-2xl focus:outline-none transition-all placeholder:font-normal placeholder:text-gray-300"
                 style={{
                   color: '#1a1a2e',
                   letterSpacing: '0.05em',
@@ -144,19 +144,19 @@ const GuestLookupPage: React.FC = () => {
           <button
             type="submit"
             disabled={isSearching || !phone}
-            className="w-full flex items-center justify-center gap-3 py-4 font-bold text-base rounded-2xl shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 sm:gap-3 py-3 sm:py-4 font-bold text-sm sm:text-base rounded-2xl shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: '#1a1a2e', color: '#ffffff' }}
             onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#2d2d52'; }}
             onMouseLeave={e => { e.currentTarget.style.background = '#1a1a2e'; }}
           >
             {isSearching ? (
               <>
-                <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 Searching...
               </>
             ) : (
               <>
-                <Search className="w-5 h-5" />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                 Check Guest
               </>
             )}

@@ -97,59 +97,59 @@ const Dashboard: React.FC = () => {
   }
 
   return (<>
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <section className="flex justify-between items-end">
+    <div className="space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <section className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
         <div>
-          <h2 className="text-5xl font-bold text-primary tracking-tight">Good morning, {user?.full_name?.split(' ')[0] || 'Admin'}</h2>
-          <p className="text-soft-slate text-lg mt-2">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-primary tracking-tight">Good morning, {user?.full_name?.split(' ')[0] || 'Admin'}</h2>
+          <p className="text-soft-slate text-sm sm:text-base md:text-lg mt-1 sm:mt-2">
             You have <span className="font-bold text-primary">{stats.todayCheckIns} reservation{stats.todayCheckIns !== 1 ? 's' : ''}</span> for today's check-in.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:gap-3 w-full sm:w-auto">
           <button 
             onClick={handleExportReport}
-            className="flex items-center gap-2 px-6 py-3 bg-white border border-soft-slate/20 rounded-xl font-bold text-sm text-soft-slate hover:border-elegant-gold hover:text-elegant-gold transition-all"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white border border-soft-slate/20 rounded-xl font-bold text-xs sm:text-sm text-soft-slate hover:border-elegant-gold hover:text-elegant-gold transition-all shadow-sm"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4 shrink-0" />
             Export Daily Report
           </button>
           <button 
             onClick={() => setShowLocationModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-elegant-gold text-deep-charcoal rounded-xl font-bold text-sm hover:scale-105 transition-all shadow-lg shadow-elegant-gold/10"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-elegant-gold text-deep-charcoal rounded-xl font-bold text-xs sm:text-sm hover:scale-105 transition-all shadow-lg shadow-elegant-gold/10"
           >
-            <PlusCircle className="w-4 h-4" />
+            <PlusCircle className="w-4 h-4 shrink-0" />
             Quotation for Enquiry
           </button>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-card p-8 rounded-2xl flex flex-col justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="glass-card p-5 sm:p-8 rounded-2xl flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
-              <BookOpen className="w-6 h-6" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+              <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
           </div>
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Total Reservations</p>
-            <p className="text-3xl font-bold text-primary mt-1">{stats.totalReservations.toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">{stats.totalReservations.toLocaleString()}</p>
           </div>
         </div>
 
-        <div className="glass-card p-8 rounded-2xl flex flex-col justify-between">
+        <div className="glass-card p-5 sm:p-8 rounded-2xl flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <div className="w-12 h-12 rounded-xl bg-elegant-gold/10 flex items-center justify-center text-elegant-gold">
-              <CreditCard className="w-6 h-6" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-elegant-gold/10 flex items-center justify-center text-elegant-gold">
+              <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
           </div>
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Revenue (Monthly)</p>
-            <p className="text-3xl font-bold text-primary mt-1">₹ {stats.monthlyRevenue.toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">₹ {stats.monthlyRevenue.toLocaleString()}</p>
           </div>
         </div>
 
-        <div className="glass-card p-8 rounded-2xl flex items-center gap-6">
-          <div className="relative w-20 h-20">
+        <div className="glass-card p-5 sm:p-8 rounded-2xl flex items-center gap-4 sm:gap-6">
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0">
             <svg className="w-full h-full transform -rotate-90">
               <circle className="text-gray-100" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" strokeWidth="6" />
               <circle 
@@ -161,53 +161,53 @@ const Dashboard: React.FC = () => {
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-sm font-bold text-primary">{stats.occupancyRate}%</span>
+              <span className="text-xs sm:text-sm font-bold text-primary">{stats.occupancyRate}%</span>
             </div>
           </div>
           <div>
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Occupancy</p>
-            <p className="text-2xl font-bold text-primary mt-1">{stats.occupancyRate > 70 ? 'High' : stats.occupancyRate > 0 ? 'Normal' : 'Empty'}</p>
+            <p className="text-xl sm:text-2xl font-bold text-primary mt-1">{stats.occupancyRate > 70 ? 'High' : stats.occupancyRate > 0 ? 'Normal' : 'Empty'}</p>
           </div>
         </div>
 
-        <div className="glass-card p-8 rounded-2xl flex flex-col justify-between">
-          <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-red-600">
-            <DoorOpen className="w-6 h-6" />
+        <div className="glass-card p-5 sm:p-8 rounded-2xl flex flex-col justify-between">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-red-50 flex items-center justify-center text-red-600">
+            <DoorOpen className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <p className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Available Rooms</p>
-            <p className="text-3xl font-bold text-primary mt-1">
+            <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">
               {String(stats.availableRooms).padStart(2, '0')} <span className="text-xs font-normal text-soft-slate lowercase tracking-normal">/ {stats.totalRooms} Total</span>
             </p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-8 glass-card p-8 rounded-2xl min-h-[300px]">
+      <div className="grid grid-cols-12 gap-4 sm:gap-6">
+        <div className="col-span-12 lg:col-span-8 glass-card p-5 sm:p-8 rounded-2xl min-h-[300px]">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-xl font-bold text-primary">Booking Overview</h3>
-              <p className="text-sm text-soft-slate">Live data from your reservations database</p>
+              <h3 className="text-lg sm:text-xl font-bold text-primary">Booking Overview</h3>
+              <p className="text-xs sm:text-sm text-soft-slate">Live data from your reservations database</p>
             </div>
           </div>
           {stats.totalReservations === 0 ? (
             <div className="flex items-center justify-center h-48 text-soft-slate">
-              <p>No reservations yet. Create one to see analytics here.</p>
+              <p className="text-sm">No reservations yet. Create one to see analytics here.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-6">
-              <div className="p-6 bg-background rounded-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+              <div className="p-4 sm:p-6 bg-background rounded-2xl">
                 <p className="text-[10px] font-bold text-soft-slate uppercase">Total Bookings</p>
-                <p className="text-2xl font-bold text-primary mt-2">{stats.totalReservations}</p>
+                <p className="text-xl sm:text-2xl font-bold text-primary mt-1 sm:mt-2">{stats.totalReservations}</p>
               </div>
-              <div className="p-6 bg-background rounded-2xl">
+              <div className="p-4 sm:p-6 bg-background rounded-2xl">
                 <p className="text-[10px] font-bold text-soft-slate uppercase">Monthly Revenue</p>
-                <p className="text-2xl font-bold text-elegant-gold mt-2">₹ {stats.monthlyRevenue.toLocaleString()}</p>
+                <p className="text-xl sm:text-2xl font-bold text-elegant-gold mt-1 sm:mt-2">₹ {stats.monthlyRevenue.toLocaleString()}</p>
               </div>
-              <div className="p-6 bg-background rounded-2xl">
+              <div className="p-4 sm:p-6 bg-background rounded-2xl">
                 <p className="text-[10px] font-bold text-soft-slate uppercase">Occupancy</p>
-                <p className="text-2xl font-bold text-primary mt-2 flex items-center gap-1">
+                <p className="text-xl sm:text-2xl font-bold text-primary mt-1 sm:mt-2 flex items-center gap-1">
                   {stats.occupancyRate}% <TrendingUp className="w-4 h-4 text-green-600" />
                 </p>
               </div>
@@ -215,9 +215,9 @@ const Dashboard: React.FC = () => {
           )}
         </div>
 
-        <div className="col-span-12 lg:col-span-4 glass-card p-8 rounded-2xl">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-bold text-primary">Recent Activity</h3>
+        <div className="col-span-12 lg:col-span-4 glass-card p-5 sm:p-8 rounded-2xl">
+          <div className="flex justify-between items-center mb-6 sm:mb-8">
+            <h3 className="text-lg sm:text-xl font-bold text-primary">Recent Activity</h3>
           </div>
           
           {activity.length === 0 ? (

@@ -345,59 +345,59 @@ const Reservations: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="flex justify-between items-end">
-        <div>
-          <h2 className="text-5xl font-bold text-primary tracking-tight">Reservations</h2>
-          <div className="flex gap-6 mt-6 border-b border-border-subtle overflow-x-auto scrollbar-hide">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
+        <div className="min-w-0 w-full sm:w-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-primary tracking-tight">Reservations</h2>
+          <div className="flex gap-4 sm:gap-6 mt-4 sm:mt-6 border-b border-border-subtle overflow-x-auto scrollbar-hide pb-0.5">
             {['All', 'Upcoming', 'Active', 'Completed', 'Cancelled', 'Pending', 'Confirmed', 'Hold'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`pb-4 text-sm font-bold transition-all ${
+                className={`pb-3 sm:pb-4 text-xs sm:text-sm font-bold transition-all whitespace-nowrap shrink-0 ${
                   activeTab === tab
                     ? 'text-primary border-b-2 border-elegant-gold'
                     : 'text-soft-slate hover:text-primary'
                 }`}
               >
                 {tab}
-                <span className="ml-2 text-[10px] bg-background rounded-full px-2 py-0.5">
+                <span className="ml-1.5 sm:ml-2 text-[10px] bg-background rounded-full px-2 py-0.5">
                   {tab === 'All' ? reservations.length : reservations.filter(r => r.status === tab).length}
                 </span>
               </button>
             ))}
           </div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-3 w-full sm:w-auto">
           <button
             onClick={() => setShowLocationModal(true)}
-            className="flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
+            className="w-full sm:w-auto justify-center flex items-center gap-2 px-5 sm:px-8 py-3 sm:py-4 bg-primary text-white rounded-xl font-bold text-xs sm:text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
           >
-            <Plus className="w-5 h-5 text-elegant-gold" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-elegant-gold shrink-0" />
             Quotation for Enquiry
           </button>
         </div>
       </header>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: 'Total', value: reservations.length, color: 'text-primary' },
           { label: 'Upcoming', value: reservations.filter(r => r.status === 'Upcoming').length, color: 'text-blue-500' },
           { label: 'Active', value: reservations.filter(r => r.status === 'Active').length, color: 'text-elegant-gold' },
           { label: 'Completed', value: reservations.filter(r => r.status === 'Completed').length, color: 'text-green-600' },
         ].map(stat => (
-          <div key={stat.label} className="glass-card p-5 rounded-2xl flex flex-col gap-1">
+          <div key={stat.label} className="glass-card p-4 sm:p-5 rounded-2xl flex flex-col gap-1">
             <span className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">{stat.label}</span>
-            <span className={`text-3xl font-black ${stat.color}`}>{stat.value}</span>
+            <span className={`text-2xl sm:text-3xl font-black ${stat.color}`}>{stat.value}</span>
           </div>
         ))}
       </div>
 
       {/* Reservations Table */}
-      <div className="glass-card rounded-[2rem] overflow-hidden">
-        <div className="p-8 border-b border-border-subtle flex justify-between items-center">
-          <h3 className="text-xl font-bold text-primary">
+      <div className="glass-card rounded-2xl sm:rounded-[2rem] overflow-hidden">
+        <div className="p-4 sm:p-8 border-b border-border-subtle flex justify-between items-center">
+          <h3 className="text-lg sm:text-xl font-bold text-primary">
             {activeTab === 'All' ? 'All Reservations' : `${activeTab} Reservations`}
           </h3>
           <span className="text-xs font-bold text-soft-slate">{filteredReservations.length} records</span>
@@ -582,49 +582,49 @@ const Reservations: React.FC = () => {
       </div>
 
       {receiptModalData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 print:p-0 print:bg-white print:block">
-          <div className="bg-[#f0f2f5] rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl print:shadow-none print:max-h-none print:bg-white print:rounded-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 print:p-0 print:bg-white print:block">
+          <div className="bg-[#f0f2f5] rounded-2xl sm:rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl print:shadow-none print:max-h-none print:bg-white print:rounded-none">
             {/* Header / Controls (Hidden when printing) */}
-            <div className="px-6 py-4 bg-white border-b flex justify-between items-center print:hidden rounded-t-3xl border-gray-200">
-              <h3 className="text-xl font-black text-primary">Receipt Preview</h3>
-              <div className="flex items-center gap-3">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 bg-white border-b flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 print:hidden rounded-t-2xl sm:rounded-t-3xl border-gray-200">
+              <h3 className="text-base sm:text-xl font-black text-primary">Receipt Preview</h3>
+              <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap">
                 {selectedReservationId && (
                   <button
                     onClick={() => sendReceipt(selectedReservationId)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl hover:bg-blue-100 transition-colors shadow-sm"
+                    className="flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl hover:bg-blue-100 transition-colors shadow-sm text-xs sm:text-sm font-bold"
                     title="Email Receipt"
                   >
-                    <Mail className="w-4 h-4" />
-                    <span className="text-sm font-bold">Email</span>
+                    <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span>Email</span>
                   </button>
                 )}
                 <button
                   onClick={handleDownloadReceipt}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 border border-amber-100 rounded-xl hover:bg-amber-100 transition-colors shadow-sm"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-amber-50 text-amber-700 border border-amber-100 rounded-xl hover:bg-amber-100 transition-colors shadow-sm text-xs sm:text-sm font-bold"
                   title="Download Receipt"
                 >
-                  <Download className="w-4 h-4" />
-                  <span className="text-sm font-bold">Download</span>
+                  <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Download</span>
                 </button>
                 <button
                   onClick={handleWhatsAppReceipt}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl hover:bg-emerald-100 transition-colors shadow-sm"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl hover:bg-emerald-100 transition-colors shadow-sm text-xs sm:text-sm font-bold"
                   title="Send Receipt via WhatsApp"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  <span className="text-sm font-bold">WhatsApp</span>
+                  <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>WhatsApp</span>
                 </button>
                 <button
                   onClick={() => setReceiptModalData(null)}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-500 hover:text-gray-900"
+                  className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-500 hover:text-gray-900"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               </div>
             </div>
             
             {/* Scrollable Receipt Body */}
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-50 print:p-0 print:bg-white">
+            <div className="flex-1 overflow-y-auto p-2 sm:p-6 bg-gray-50 print:p-0 print:bg-white">
               <ReservationReceipt data={receiptModalData} />
             </div>
           </div>

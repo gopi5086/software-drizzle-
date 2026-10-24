@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Menu } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -14,11 +14,12 @@ interface SearchResult {
 
 interface TopBarProps {
   expanded?: boolean;
+  onMobileMenuToggle?: () => void;
 }
 
 type SearchScope = 'All' | 'Reservation' | 'Enquiry' | 'Guest' | 'Invoice';
 
-const TopBar: React.FC<TopBarProps> = ({ expanded = false }) => {
+const TopBar: React.FC<TopBarProps> = ({ expanded = false, onMobileMenuToggle }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -180,10 +181,20 @@ const TopBar: React.FC<TopBarProps> = ({ expanded = false }) => {
 
   return (
     <header
-      className="fixed top-0 right-0 h-20 bg-surface-glass backdrop-blur-md border-b border-border-subtle flex justify-between items-center px-10 shadow-sm z-40 transition-all duration-300"
-      style={{ left: expanded ? '260px' : '72px', width: `calc(100% - ${expanded ? '260px' : '72px'})` }}
+      className={`fixed top-0 right-0 h-16 sm:h-20 bg-surface-glass backdrop-blur-md border-b border-border-subtle flex justify-between items-center px-3 sm:px-6 md:px-10 shadow-sm z-40 transition-all duration-300 left-0 w-full ${
+        expanded ? 'md:left-[260px] md:w-[calc(100%-260px)]' : 'md:left-[72px] md:w-[calc(100%-72px)]'
+      }`}
     >
-      <div className="flex items-center gap-4 flex-1 min-w-0 relative">
+      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0 relative">
+        <button
+          type="button"
+          onClick={onMobileMenuToggle}
+          className="md:hidden p-2 rounded-xl text-primary hover:bg-slate-100 transition-colors shrink-0"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="w-5 h-5 text-primary" />
+        </button>
+
         <div className="relative w-full max-w-[640px] focus-within:ring-2 focus-within:ring-elegant-gold rounded-lg transition-all bg-background/50">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-soft-slate w-4 h-4" />
           <input
@@ -191,7 +202,7 @@ const TopBar: React.FC<TopBarProps> = ({ expanded = false }) => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search reservations, enquiries, guests, invoices..."
-            className="w-full bg-transparent border-none rounded-lg pl-10 pr-10 py-2 text-sm placeholder:text-soft-slate/50 focus:ring-0"
+            className="w-full bg-transparent border-none rounded-lg pl-9 sm:pl-10 pr-9 sm:pr-10 py-1.5 sm:py-2 text-xs sm:text-sm placeholder:text-soft-slate/50 focus:ring-0"
           />
           {query && (
             <button
@@ -207,13 +218,13 @@ const TopBar: React.FC<TopBarProps> = ({ expanded = false }) => {
 
         {query.trim() && (
           <div className="absolute left-0 top-full mt-2 w-full bg-white border border-border-subtle rounded-2xl shadow-2xl z-50 overflow-hidden">
-            <div className="flex gap-2 px-3 py-2 border-b border-border-subtle bg-background/60">
+            <div className="flex gap-1.5 sm:gap-2 px-3 py-2 border-b border-border-subtle bg-background/60 overflow-x-auto">
               {(['All', 'Reservation', 'Enquiry', 'Guest', 'Invoice'] as const).map((scope) => (
                 <button
                   key={scope}
                   type="button"
                   onClick={() => setSelectedScope(scope)}
-                  className={`px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors ${
+                  className={`px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors shrink-0 ${
                     selectedScope === scope
                       ? 'bg-primary text-white'
                       : 'bg-white text-soft-slate hover:bg-gray-100'
@@ -227,7 +238,7 @@ const TopBar: React.FC<TopBarProps> = ({ expanded = false }) => {
             {loading ? (
               <div className="px-4 py-3 text-xs text-soft-slate font-medium">Searching {selectedScope === 'All' ? 'across records' : selectedScope.toLowerCase()}...</div>
             ) : results.length > 0 ? (
-              <div>
+              <div className="max-h-[60vh] overflow-y-auto">
                 {results.map((result) => (
                   <button
                     key={`${result.category}-${result.id}`}
@@ -239,7 +250,7 @@ const TopBar: React.FC<TopBarProps> = ({ expanded = false }) => {
                       <p className="text-sm font-bold text-primary">{result.label}</p>
                       <p className="text-[11px] text-soft-slate mt-0.5">{result.subtitle}</p>
                     </div>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-soft-slate mt-1">{result.category}</span>
+                    <span className="text-[9px] font-black uppercase tracking-wider text-soft-slate mt-1 shrink-0">{result.category}</span>
                   </button>
                 ))}
               </div>
@@ -252,24 +263,24 @@ const TopBar: React.FC<TopBarProps> = ({ expanded = false }) => {
         )}
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-2 sm:gap-6 pl-2 shrink-0">
         {user?.role === 'admin' ? (
-          <Link to="/settings" className="flex items-center gap-3 cursor-pointer group hover:opacity-80 transition-opacity">
-            <div className="text-right">
+          <Link to="/settings" className="flex items-center gap-2 sm:gap-3 cursor-pointer group hover:opacity-80 transition-opacity">
+            <div className="hidden sm:block text-right">
               <p className="text-sm font-bold text-primary">{user?.full_name || 'Staff Profile'}</p>
               <p className="text-[10px] text-soft-slate uppercase tracking-wider">{user?.role || 'Hotel Manager'}</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center border-2 border-elegant-gold text-sm font-bold text-slate-700">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center border-2 border-elegant-gold text-xs sm:text-sm font-bold text-slate-700 shadow-sm">
               {(user?.full_name || 'U').charAt(0).toUpperCase()}
             </div>
           </Link>
         ) : (
-          <div className="flex items-center gap-3">
-            <div className="text-right">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden sm:block text-right">
               <p className="text-sm font-bold text-primary">{user?.full_name || 'Staff Profile'}</p>
               <p className="text-[10px] text-soft-slate uppercase tracking-wider">{user?.role || 'Hotel Manager'}</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center border-2 border-elegant-gold text-sm font-bold text-slate-700">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center border-2 border-elegant-gold text-xs sm:text-sm font-bold text-slate-700 shadow-sm">
               {(user?.full_name || 'U').charAt(0).toUpperCase()}
             </div>
           </div>

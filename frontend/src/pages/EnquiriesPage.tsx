@@ -282,18 +282,18 @@ const EnquiriesPage: React.FC = () => {
   const totalBalance = totalTariff - totalAdvance;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Header */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-border-subtle pb-6">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-border-subtle pb-5 sm:pb-6">
         <div>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 shadow-md">
-              <HelpCircle className="w-6 h-6" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 shadow-md shrink-0">
+              <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h2 className="text-4xl font-black text-primary tracking-tight">Enquiries & Quotations</h2>
-              <p className="text-soft-slate text-sm font-medium mt-0.5">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary tracking-tight">Enquiries & Quotations</h2>
+              <p className="text-soft-slate text-xs sm:text-sm font-medium mt-0.5">
                 Incoming quotes saved in enquiries database · Convert to reservation after completion
               </p>
             </div>
@@ -302,59 +302,59 @@ const EnquiriesPage: React.FC = () => {
 
         <button
           onClick={() => setShowLocationModal(true)}
-          className="flex items-center gap-2 px-6 py-3.5 bg-elegant-gold text-deep-charcoal rounded-xl font-bold text-sm shadow-lg shadow-elegant-gold/20 hover:scale-[1.02] transition-transform"
+          className="w-full md:w-auto justify-center flex items-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 bg-elegant-gold text-deep-charcoal rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-elegant-gold/20 hover:scale-[1.02] transition-transform"
         >
-          <PlusCircle className="w-5 h-5" />
+          <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
           Create New Enquiry
         </button>
       </header>
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="glass-card p-6 rounded-[2rem] border border-border-subtle shadow-sm flex items-center justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+        <div className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-border-subtle shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-black text-soft-slate uppercase tracking-wider">Total Enquiries</p>
-            <p className="text-3xl font-black text-primary mt-1">{enquiries.length}</p>
+            <p className="text-[10px] sm:text-xs font-black text-soft-slate uppercase tracking-wider">Total Enquiries</p>
+            <p className="text-2xl sm:text-3xl font-black text-primary mt-1">{enquiries.length}</p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-            <HelpCircle className="w-6 h-6" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+            <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-[2rem] border border-border-subtle shadow-sm flex items-center justify-between">
+        <div className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-border-subtle shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-black text-soft-slate uppercase tracking-wider">Pending Enquiries</p>
-            <p className="text-3xl font-black text-amber-600 mt-1">{pendingCount}</p>
+            <p className="text-[10px] sm:text-xs font-black text-soft-slate uppercase tracking-wider">Pending Enquiries</p>
+            <p className="text-2xl sm:text-3xl font-black text-amber-600 mt-1">{pendingCount}</p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600">
-            <Clock className="w-6 h-6" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0">
+            <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-[2rem] border border-border-subtle shadow-sm flex items-center justify-between">
+        <div className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-border-subtle shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-black text-soft-slate uppercase tracking-wider">Converted to Reservations</p>
-            <p className="text-3xl font-black text-emerald-600 mt-1">{convertedCount}</p>
+            <p className="text-[10px] sm:text-xs font-black text-soft-slate uppercase tracking-wider">Converted to Reservations</p>
+            <p className="text-2xl sm:text-3xl font-black text-emerald-600 mt-1">{convertedCount}</p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-            <UserCheck className="w-6 h-6" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
+            <UserCheck className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
       </div>
 
       {/* Main Table Container */}
-      <div className="glass-card rounded-[2.5rem] overflow-hidden border border-border-subtle shadow-xl">
+      <div className="glass-card rounded-2xl sm:rounded-[2.5rem] overflow-hidden border border-border-subtle shadow-xl">
         
         {/* Controls Header */}
-        <div className="p-6 md:p-8 border-b border-border-subtle bg-white/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
+        <div className="p-4 sm:p-6 md:p-8 border-b border-border-subtle bg-white/50 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
             {(['Enquiry', 'Confirmed', 'On Hold', 'In Progress', 'All', 'Cancelled'] as const).map(tab => {
               const count = tab === 'Enquiry' ? enquiryCount : tab === 'Confirmed' ? confirmedCount : tab === 'All' ? enquiries.length : enquiries.filter(item => normalizeEnquiryStatus(item.status) === tab).length;
               return (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                  className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap shrink-0 ${
                     activeTab === tab
                       ? 'bg-primary text-white shadow-lg shadow-primary/20'
                       : 'text-soft-slate hover:bg-gray-100'
@@ -366,13 +366,13 @@ const EnquiriesPage: React.FC = () => {
             })}
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center bg-background rounded-xl p-1 border border-border-subtle text-xs font-bold">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
+            <div className="flex items-center justify-center bg-background rounded-xl p-1 border border-border-subtle text-xs font-bold shrink-0">
               {(['All', 'Chennai', 'Ooty'] as const).map(loc => (
                 <button
                   key={loc}
                   onClick={() => setLocationFilter(loc)}
-                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg transition-colors ${
                     locationFilter === loc ? 'bg-elegant-gold text-deep-charcoal shadow-sm' : 'text-soft-slate hover:text-primary'
                   }`}
                 >
@@ -381,7 +381,7 @@ const EnquiriesPage: React.FC = () => {
               ))}
             </div>
 
-            <div className="relative min-w-[200px]">
+            <div className="relative min-w-0 sm:min-w-[200px] flex-1">
               <Search className="w-4 h-4 text-soft-slate absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"

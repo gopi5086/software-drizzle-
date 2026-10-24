@@ -173,18 +173,18 @@ const RecordPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Header & Staff Profile Banner */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-border-subtle pb-6">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-border-subtle pb-5 sm:pb-6">
         <div>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-elegant-gold/20 border border-elegant-gold/30 flex items-center justify-center text-elegant-gold shadow-lg shadow-elegant-gold/10">
-              <ClipboardList className="w-6 h-6" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-elegant-gold/20 border border-elegant-gold/30 flex items-center justify-center text-elegant-gold shadow-lg shadow-elegant-gold/10 shrink-0">
+              <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h2 className="text-4xl font-black text-primary tracking-tight">Staff Activity & Conversion Record</h2>
-              <p className="text-soft-slate text-sm font-medium mt-0.5">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary tracking-tight">Staff Activity & Conversion Record</h2>
+              <p className="text-soft-slate text-xs sm:text-sm font-medium mt-0.5">
                 Staff login performance tracking & enquiry to reservation conversion record
               </p>
             </div>
@@ -193,11 +193,11 @@ const RecordPage: React.FC = () => {
 
         {/* Admin Staff Filter Selector */}
         {currentUser?.role === 'admin' && (
-          <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl border border-border-subtle shadow-sm">
-            <User className="w-4 h-4 text-elegant-gold ml-2" />
-            <span className="text-xs font-bold text-soft-slate uppercase tracking-wider">Select Staff:</span>
+          <div className="w-full md:w-auto flex items-center gap-2 sm:gap-3 bg-white p-2 sm:p-2.5 rounded-2xl border border-border-subtle shadow-sm">
+            <User className="w-4 h-4 text-elegant-gold ml-1 sm:ml-2 shrink-0" />
+            <span className="text-[10px] sm:text-xs font-bold text-soft-slate uppercase tracking-wider shrink-0">Staff:</span>
             <select
-              className="bg-background border border-border-subtle text-primary font-bold text-sm rounded-xl py-2 px-3 focus:ring-2 focus:ring-elegant-gold outline-none cursor-pointer"
+              className="flex-1 bg-background border border-border-subtle text-primary font-bold text-xs sm:text-sm rounded-xl py-1.5 sm:py-2 px-2 sm:px-3 focus:ring-2 focus:ring-elegant-gold outline-none cursor-pointer"
               value={selectedStaffId}
               onChange={e => setSelectedStaffId(e.target.value)}
             >
@@ -215,38 +215,38 @@ const RecordPage: React.FC = () => {
 
       {/* Logged-In Staff Profile Info Card */}
       {staffInfo && (
-        <div className="glass-card p-6 rounded-[2rem] border border-border-subtle bg-gradient-to-r from-deep-charcoal via-slate-900 to-deep-charcoal text-white shadow-xl relative overflow-hidden">
+        <div className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-border-subtle bg-gradient-to-r from-deep-charcoal via-slate-900 to-deep-charcoal text-white shadow-xl relative overflow-hidden">
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-elegant-gold/5 blur-3xl rounded-full pointer-events-none" />
-          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-elegant-gold flex items-center justify-center text-deep-charcoal font-black text-2xl shadow-lg shadow-elegant-gold/20">
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 sm:gap-5">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-elegant-gold flex items-center justify-center text-deep-charcoal font-black text-xl sm:text-2xl shadow-lg shadow-elegant-gold/20 shrink-0">
                 {staffInfo.name ? staffInfo.name[0].toUpperCase() : 'S'}
               </div>
-              <div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-black text-elegant-gold bg-elegant-gold/10 px-3 py-1 rounded-full border border-elegant-gold/20 uppercase tracking-widest">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                  <span className="text-[10px] sm:text-xs font-black text-elegant-gold bg-elegant-gold/10 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border border-elegant-gold/20 uppercase tracking-widest">
                     Staff ID: #{staffInfo.id}
                   </span>
-                  <span className="text-xs font-bold text-gray-300 bg-white/10 px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
+                  <span className="text-[10px] sm:text-xs font-bold text-gray-300 bg-white/10 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
                     <Shield className="w-3 h-3 text-elegant-gold" /> {staffInfo.role}
                   </span>
                 </div>
-                <h3 className="text-2xl font-black text-white mt-1.5">{staffInfo.name}</h3>
-                <p className="text-xs text-gray-400 font-medium">{staffInfo.email || 'Registered Staff Member'}</p>
+                <h3 className="text-lg sm:text-2xl font-black text-white mt-1 truncate">{staffInfo.name}</h3>
+                <p className="text-xs text-gray-400 font-medium truncate">{staffInfo.email || 'Registered Staff Member'}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-8">
+            <div className="flex items-center gap-4 sm:gap-6 border-t md:border-t-0 md:border-l border-white/10 pt-3 md:pt-0 md:pl-8">
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">System Status</p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-sm font-bold text-emerald-400">Logged In & Active</span>
+                  <span className="text-xs sm:text-sm font-bold text-emerald-400">Logged In & Active</span>
                 </div>
               </div>
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Account ID</p>
-                <p className="text-sm font-bold text-white mt-1">#{staffInfo.id}</p>
+                <p className="text-xs sm:text-sm font-bold text-white mt-1">#{staffInfo.id}</p>
               </div>
             </div>
           </div>
@@ -254,47 +254,47 @@ const RecordPage: React.FC = () => {
       )}
 
       {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         
         {/* Enquiries Attended */}
-        <div className="glass-card p-6 rounded-[2rem] border border-border-subtle shadow-md hover:border-elegant-gold/40 transition-all group">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-xs font-black text-soft-slate uppercase tracking-wider">Enquiries Attended</span>
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-              <ClipboardList className="w-5 h-5" />
+        <div className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-border-subtle shadow-md hover:border-elegant-gold/40 transition-all group">
+          <div className="flex justify-between items-start mb-3 sm:mb-4">
+            <span className="text-[10px] sm:text-xs font-black text-soft-slate uppercase tracking-wider">Enquiries Attended</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform shrink-0">
+              <ClipboardList className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <p className="text-4xl font-black text-primary tracking-tight">{stats.enquiriesAttended}</p>
-          <p className="text-[11px] font-semibold text-soft-slate mt-2 flex items-center gap-1">
-            <UserCheck className="w-3.5 h-3.5 text-blue-500" /> Total quotes & enquiries logged
+          <p className="text-2xl sm:text-4xl font-black text-primary tracking-tight">{stats.enquiriesAttended}</p>
+          <p className="text-[10px] sm:text-[11px] font-semibold text-soft-slate mt-2 flex items-center gap-1">
+            <UserCheck className="w-3.5 h-3.5 text-blue-500 shrink-0" /> Total quotes logged
           </p>
         </div>
 
         {/* Converted to Reservation */}
-        <div className="glass-card p-6 rounded-[2rem] border border-border-subtle shadow-md hover:border-emerald-500/40 transition-all group">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-xs font-black text-soft-slate uppercase tracking-wider">Converted to Reservation</span>
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
-              <CheckCircle2 className="w-5 h-5" />
+        <div className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-border-subtle shadow-md hover:border-emerald-500/40 transition-all group">
+          <div className="flex justify-between items-start mb-3 sm:mb-4">
+            <span className="text-[10px] sm:text-xs font-black text-soft-slate uppercase tracking-wider">Converted to Reservation</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <p className="text-4xl font-black text-emerald-600 tracking-tight">{stats.convertedToReservation}</p>
-          <p className="text-[11px] font-semibold text-soft-slate mt-2 flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Confirmed bookings generated
+          <p className="text-2xl sm:text-4xl font-black text-emerald-600 tracking-tight">{stats.convertedToReservation}</p>
+          <p className="text-[10px] sm:text-[11px] font-semibold text-soft-slate mt-2 flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> Confirmed bookings
           </p>
         </div>
 
         {/* Conversion Rate (%) */}
-        <div className="glass-card p-6 rounded-[2rem] border border-border-subtle shadow-md hover:border-amber-500/40 transition-all group">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-xs font-black text-soft-slate uppercase tracking-wider">Conversion Rate</span>
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
-              <TrendingUp className="w-5 h-5" />
+        <div className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-border-subtle shadow-md hover:border-amber-500/40 transition-all group">
+          <div className="flex justify-between items-start mb-3 sm:mb-4">
+            <span className="text-[10px] sm:text-xs font-black text-soft-slate uppercase tracking-wider">Conversion Rate</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform shrink-0">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-4xl font-black text-amber-600 tracking-tight">{stats.conversionRate}%</p>
-            <span className="text-xs font-bold text-soft-slate">success rate</span>
+            <p className="text-2xl sm:text-4xl font-black text-amber-600 tracking-tight">{stats.conversionRate}%</p>
+            <span className="text-[10px] sm:text-xs font-bold text-soft-slate">success rate</span>
           </div>
           <div className="w-full bg-gray-100 rounded-full h-2 mt-3 overflow-hidden">
             <div
@@ -305,34 +305,34 @@ const RecordPage: React.FC = () => {
         </div>
 
         {/* Revenue Generated */}
-        <div className="glass-card p-6 rounded-[2rem] border border-border-subtle shadow-md hover:border-elegant-gold/40 transition-all group">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-xs font-black text-soft-slate uppercase tracking-wider">Revenue Generated</span>
-            <div className="w-10 h-10 rounded-xl bg-elegant-gold/10 flex items-center justify-center text-elegant-gold group-hover:scale-110 transition-transform">
-              <IndianRupee className="w-5 h-5" />
+        <div className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-border-subtle shadow-md hover:border-elegant-gold/40 transition-all group">
+          <div className="flex justify-between items-start mb-3 sm:mb-4">
+            <span className="text-[10px] sm:text-xs font-black text-soft-slate uppercase tracking-wider">Revenue Generated</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-elegant-gold/10 flex items-center justify-center text-elegant-gold group-hover:scale-110 transition-transform shrink-0">
+              <IndianRupee className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <p className="text-3xl font-black text-primary tracking-tight">
+          <p className="text-xl sm:text-3xl font-black text-primary tracking-tight">
             ₹ {stats.totalRevenue.toLocaleString()}
           </p>
-          <p className="text-[11px] font-semibold text-soft-slate mt-2 flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5 text-elegant-gold" /> Total booking revenue
+          <p className="text-[10px] sm:text-[11px] font-semibold text-soft-slate mt-2 flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5 text-elegant-gold shrink-0" /> Total booking revenue
           </p>
         </div>
 
       </div>
 
       {/* Main Records Table & Controls */}
-      <div className="glass-card rounded-[2.5rem] overflow-hidden border border-border-subtle shadow-xl">
+      <div className="glass-card rounded-2xl sm:rounded-[2.5rem] overflow-hidden border border-border-subtle shadow-xl">
         
         {/* Table Filter Controls Header */}
-        <div className="p-6 md:p-8 border-b border-border-subtle bg-white/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
+        <div className="p-4 sm:p-6 md:p-8 border-b border-border-subtle bg-white/50 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
             {(['All', 'Converted', 'Pending', 'Cancelled'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap shrink-0 ${
                   activeTab === tab
                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
                     : 'text-soft-slate hover:bg-gray-100'
@@ -343,14 +343,14 @@ const RecordPage: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
             {/* Location Filter */}
-            <div className="flex items-center bg-background rounded-xl p-1 border border-border-subtle text-xs font-bold">
+            <div className="flex items-center justify-center bg-background rounded-xl p-1 border border-border-subtle text-xs font-bold shrink-0">
               {(['All', 'Chennai', 'Ooty'] as const).map(loc => (
                 <button
                   key={loc}
                   onClick={() => setLocationFilter(loc)}
-                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg transition-colors ${
                     locationFilter === loc ? 'bg-elegant-gold text-deep-charcoal shadow-sm' : 'text-soft-slate hover:text-primary'
                   }`}
                 >
@@ -360,7 +360,7 @@ const RecordPage: React.FC = () => {
             </div>
 
             {/* Search Input */}
-            <div className="relative min-w-[200px]">
+            <div className="relative min-w-0 sm:min-w-[200px] flex-1">
               <Search className="w-4 h-4 text-soft-slate absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
