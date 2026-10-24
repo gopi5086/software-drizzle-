@@ -264,24 +264,24 @@ const TopBar: React.FC<TopBarProps> = ({ expanded = false, onMobileMenuToggle })
       </div>
 
       <div className="flex items-center gap-2 sm:gap-6 pl-2 shrink-0">
-        {user?.role === 'admin' ? (
+        {(user?.role || 'admin').toLowerCase() === 'admin' ? (
           <Link to="/settings" className="flex items-center gap-2 sm:gap-3 cursor-pointer group hover:opacity-80 transition-opacity">
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-bold text-primary">{user?.full_name || 'Staff Profile'}</p>
+              <p className="text-sm font-bold text-primary">{user?.full_name || 'Admin Profile'}</p>
               <p className="text-[10px] text-soft-slate uppercase tracking-wider">{user?.role || 'Hotel Manager'}</p>
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center border-2 border-elegant-gold text-xs sm:text-sm font-bold text-slate-700 shadow-sm">
-              {(user?.full_name || 'U').charAt(0).toUpperCase()}
+              {(user?.full_name || 'A').charAt(0).toUpperCase()}
             </div>
           </Link>
         ) : (
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden sm:block text-right">
               <p className="text-sm font-bold text-primary">{user?.full_name || 'Staff Profile'}</p>
-              <p className="text-[10px] text-soft-slate uppercase tracking-wider">{user?.role || 'Hotel Manager'}</p>
+              <p className="text-[10px] text-soft-slate uppercase tracking-wider">{user?.role || 'Staff Member'}</p>
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center border-2 border-elegant-gold text-xs sm:text-sm font-bold text-slate-700 shadow-sm">
-              {(user?.full_name || 'U').charAt(0).toUpperCase()}
+              {(user?.full_name || 'S').charAt(0).toUpperCase()}
             </div>
           </div>
         )}

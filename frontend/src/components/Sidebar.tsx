@@ -4,12 +4,18 @@ import {
   LayoutDashboard,
   CalendarDays,
   Users,
+  UserCheck,
+  Wallet,
+  Receipt,
+  BarChart3,
   Settings,
   Hotel,
   PlusCircle,
   LogOut,
   ClipboardList,
   HelpCircle,
+  TrendingUp,
+  Phone,
   X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -33,9 +39,22 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandChange, mobileOpen 
     { label: 'Enquiries', icon: HelpCircle, path: '/enquiries', roles: ['admin', 'staff'] },
     { label: 'Reservations', icon: CalendarDays, path: '/reservations', roles: ['admin', 'staff'] },
     { label: 'Record', icon: ClipboardList, path: '/record', roles: ['admin', 'staff'] },
-    { label: 'Staff', icon: Users, path: '/staff', roles: ['admin'] },
+    { label: 'Guest Lookup', icon: Phone, path: '/guest-lookup', roles: ['admin', 'staff'] },
+    { label: 'Customers', icon: Users, path: '/customers', roles: ['admin'] },
+    { label: 'Staff', icon: UserCheck, path: '/staff', roles: ['admin'] },
+    { label: 'Revenue', icon: TrendingUp, path: '/staff-revenue', roles: ['admin', 'staff'] },
+    { label: 'Finance', icon: Wallet, path: '/finance', roles: ['admin'] },
+    { label: 'Invoices', icon: Receipt, path: '/invoices', roles: ['admin', 'staff'] },
+    { label: 'Reports', icon: BarChart3, path: '/reports', roles: ['admin'] },
     { label: 'Settings', icon: Settings, path: '/settings', roles: ['admin'] },
   ];
+
+  // Safe normalized role - fallback to 'admin' if user or user.role is not populated
+  const currentRole = (user?.role || 'admin').toLowerCase();
+  const visibleMenuItems = menuItems.filter((item) => {
+    if (!item.roles || item.roles.length === 0) return true;
+    return item.roles.some((r) => r.toLowerCase() === currentRole);
+  });
 
   return (<>
     {/* Mobile Backdrop */}
@@ -47,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandChange, mobileOpen 
     )}
 
     <aside
-      className={`fixed left-0 top-0 h-full bg-deep-charcoal border-r border-soft-slate/20 flex flex-col py-6 md:py-8 z-50 transition-all duration-300 overflow-y-auto scrollbar-hide
+      className={`fixed left-0 top-0 h-full bg-deep-charcoal border-r border-soft-slate/20 flex flex-col py-5 md:py-8 z-50 transition-all duration-300 overflow-y-auto scrollbar-hide
         ${mobileOpen ? 'translate-x-0 w-[280px] shadow-2xl' : '-translate-x-full md:translate-x-0'}
         ${expanded ? 'md:w-[260px]' : 'md:w-[72px]'}
       `}
@@ -55,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandChange, mobileOpen 
       onMouseLeave={() => onExpandChange(false)}
       onTouchStart={() => onExpandChange(true)}
     >
-      <div className={`px-4 mb-8 flex items-center justify-between ${expanded || mobileOpen ? 'justify-between' : 'md:justify-center'}`}>
+      <div className={`px-4 mb-6 shrink-0 flex items-center justify-between ${expanded || mobileOpen ? 'justify-between' : 'md:justify-center'}`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-elegant-gold rounded-lg flex items-center justify-center text-deep-charcoal shrink-0 shadow-md">
             <Hotel className="w-6 h-6" />
@@ -77,36 +96,34 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandChange, mobileOpen 
         )}
       </div>
 
-      <nav className="flex-1 space-y-1 px-3">
-        {menuItems
-          .filter(item => item.roles.includes(user?.role ?? ''))
-          .map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={() => onMobileClose?.()}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${expanded || mobileOpen ? 'justify-start' : 'justify-center'} ${isActive
-                  ? 'text-elegant-gold border-l-4 border-elegant-gold bg-elegant-gold/10 font-bold'
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                }`
-              }
-            >
-              <item.icon className="w-5 h-5 shrink-0" />
-              <span className={`font-medium transition-all duration-300 ${expanded || mobileOpen ? 'opacity-100 w-auto ml-0' : 'opacity-0 w-0 overflow-hidden ml-0'}`}>
-                {item.label}
-              </span>
-            </NavLink>
-          ))}
+      <nav className="flex-1 space-y-1 px-3 overflow-y-auto scrollbar-hide">
+        {visibleMenuItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            onClick={() => onMobileClose?.()}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${expanded || mobileOpen ? 'justify-start' : 'justify-center'} ${isActive
+                ? 'text-elegant-gold border-l-4 border-elegant-gold bg-elegant-gold/10 font-bold'
+                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+              }`
+            }
+          >
+            <item.icon className="w-5 h-5 shrink-0" />
+            <span className={`font-medium text-sm transition-all duration-300 ${expanded || mobileOpen ? 'opacity-100 w-auto ml-0' : 'opacity-0 w-0 overflow-hidden ml-0'}`}>
+              {item.label}
+            </span>
+          </NavLink>
+        ))}
       </nav>
 
-      <div className="px-3 mt-auto space-y-4 pt-4">
+      <div className="px-3 mt-auto space-y-3 pt-4 shrink-0 pb-2">
         <button
           onClick={() => {
             onMobileClose?.();
             setShowLocationModal(true);
           }}
-          className={`w-full py-3.5 px-3 bg-elegant-gold text-deep-charcoal font-bold text-sm rounded-xl flex items-center gap-2 hover:scale-[1.02] transition-transform shadow-lg shadow-elegant-gold/20 justify-center`}
+          className="w-full py-3.5 px-3 bg-elegant-gold text-deep-charcoal font-bold text-sm rounded-xl flex items-center gap-2 hover:scale-[1.02] transition-transform shadow-lg shadow-elegant-gold/20 justify-center"
         >
           <PlusCircle className="w-5 h-5 flex-shrink-0" />
           <span className={`transition-all duration-300 truncate ${expanded || mobileOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'}`}>Quotation for Enquiry</span>
@@ -123,10 +140,10 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandChange, mobileOpen 
               }
             });
           }}
-          className={`w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white transition-colors border-t border-white/5 pt-4 ${expanded || mobileOpen ? 'justify-start' : 'justify-center'}`}
+          className={`w-full flex items-center gap-3 px-4 py-2.5 text-gray-400 hover:text-white transition-colors border-t border-white/5 pt-3 ${expanded || mobileOpen ? 'justify-start' : 'justify-center'}`}
         >
           <LogOut className="w-5 h-5 shrink-0" />
-          <span className={`font-medium transition-all duration-300 ${expanded || mobileOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'}`}>Logout</span>
+          <span className={`font-medium text-sm transition-all duration-300 ${expanded || mobileOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0 overflow-hidden'}`}>Logout</span>
         </button>
       </div>
     </aside>

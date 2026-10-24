@@ -19,6 +19,7 @@ import ChennaiEnquiryPage from './pages/ChennaiEnquiryPage';
 import OotyEnquiryPage from './pages/OotyEnquiryPage';
 import RecordPage from './pages/RecordPage';
 import EnquiriesPage from './pages/EnquiriesPage';
+import Invoices from './pages/Invoices';
 
 const App: React.FC = () => {
   return (
@@ -44,6 +45,7 @@ const App: React.FC = () => {
             <Route path="/staff" element={<Staff />} />
             <Route path="/staff-revenue" element={<StaffRevenueReport />} />
             <Route path="/finance" element={<Finance />} />
+            <Route path="/invoices" element={<Invoices />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
