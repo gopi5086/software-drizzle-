@@ -228,6 +228,7 @@ exports.getStaffRecordReport = async (req, res) => {
   try {
     const { id: userId, role } = req.user;
     const selectedStaffId = req.query.staff_id;
+    const month = req.query.month; // format 'YYYY-MM' or 'all'
 
     let targetStaffId = userId;
     if (role === 'admin' && selectedStaffId && selectedStaffId !== 'all') {
@@ -247,25 +248,47 @@ exports.getStaffRecordReport = async (req, res) => {
       "SELECT id, full_name, email, role FROM users WHERE role IN ('staff', 'admin') ORDER BY full_name ASC"
     );
 
-    const whereClause = isAll ? '' : 'WHERE created_by = ?';
-    const queryParams = isAll ? [] : [targetStaffId];
+    let enquiryConditions = [];
+    let enquiryParams = [];
+
+    let reservationConditions = [];
+    let reservationParams = [];
+
+    if (!isAll) {
+      enquiryConditions.push('e.created_by = ?');
+      enquiryParams.push(targetStaffId);
+
+      reservationConditions.push('r.created_by = ?');
+      reservationParams.push(targetStaffId);
+    }
+
+    if (month && month !== 'all') {
+      enquiryConditions.push("DATE_FORMAT(e.created_at, '%Y-%m') = ?");
+      enquiryParams.push(month);
+
+      reservationConditions.push("DATE_FORMAT(r.created_at, '%Y-%m') = ?");
+      reservationParams.push(month);
+    }
+
+    const enquiryWhere = enquiryConditions.length > 0 ? `WHERE ${enquiryConditions.join(' AND ')}` : '';
+    const reservationWhere = reservationConditions.length > 0 ? `WHERE ${reservationConditions.join(' AND ')}` : '';
 
     const [enquiries] = await pool.query(
       `SELECT e.*, u.full_name AS creator_name 
        FROM enquiries e 
        LEFT JOIN users u ON e.created_by = u.id 
-       ${whereClause} 
+       ${enquiryWhere} 
        ORDER BY e.created_at DESC`,
-      queryParams
+      enquiryParams
     );
 
     const [reservations] = await pool.query(
       `SELECT r.*, u.full_name AS creator_name 
        FROM reservations r 
        LEFT JOIN users u ON r.created_by = u.id 
-       ${whereClause} 
+       ${reservationWhere} 
        ORDER BY r.created_at DESC`,
-      queryParams
+      reservationParams
     );
 
     const visibleEnquiries = enquiries.filter(e => !e.reservation_id && e.status !== 'Converted');
@@ -305,6 +328,7 @@ exports.getStaffRecordReport = async (req, res) => {
       },
       allStaff,
       records: combinedRecords,
+      selectedMonth: month || 'all',
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -12,12 +12,16 @@ import {
   MapPin,
   Shield,
   User,
-  Trash2
+  Trash2,
+  Calendar,
+  Download,
+  Printer
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { exportToCSV } from '../utils/export';
 
 interface RecordItem {
   id: number;
@@ -72,6 +76,10 @@ const RecordPage: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [selectedStaffId, setSelectedStaffId] = useState<string>('');
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [staffInfo, setStaffInfo] = useState<StaffInfo | null>(null);
   const [stats, setStats] = useState<StaffStats>({
     enquiriesAttended: 0,
@@ -89,10 +97,16 @@ const RecordPage: React.FC = () => {
   const [locationFilter, setLocationFilter] = useState<'All' | 'Chennai' | 'Ooty'>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const fetchRecordData = async (staffId?: string) => {
+  const fetchRecordData = async (staffId?: string, month?: string) => {
     setLoading(true);
     try {
-      const queryParam = staffId ? `?staff_id=${staffId}` : '';
+      const params = new URLSearchParams();
+      if (staffId) params.append('staff_id', staffId);
+      const activeMonth = month !== undefined ? month : selectedMonth;
+      if (activeMonth && activeMonth !== 'all') {
+        params.append('month', activeMonth);
+      }
+      const queryParam = params.toString() ? `?${params.toString()}` : '';
       const res = await api.get(`/reports/staff-record${queryParam}`);
       
       setStaffInfo(res.data.staffInfo);
@@ -107,14 +121,14 @@ const RecordPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchRecordData(selectedStaffId);
-  }, [selectedStaffId]);
+    fetchRecordData(selectedStaffId, selectedMonth);
+  }, [selectedStaffId, selectedMonth]);
 
   const updateStatus = async (id: number, newStatus: string) => {
     try {
       await api.patch(`/reservations/${id}/status`, { status: newStatus });
       toast.success(`Status updated to ${newStatus}`);
-      fetchRecordData(selectedStaffId);
+      fetchRecordData(selectedStaffId, selectedMonth);
     } catch (err: any) {
       toast.error('Failed to update status: ' + (err.response?.data?.message || err.message));
     }
@@ -131,7 +145,7 @@ const RecordPage: React.FC = () => {
       }
 
       toast.success('Record deleted successfully');
-      fetchRecordData(selectedStaffId);
+      fetchRecordData(selectedStaffId, selectedMonth);
     } catch (err: any) {
       toast.error('Failed to delete record: ' + (err.response?.data?.message || err.message));
     }
@@ -172,18 +186,199 @@ const RecordPage: React.FC = () => {
     return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
+  const getMonthLabel = (monthStr: string) => {
+    if (!monthStr || monthStr === 'all') return 'All Time';
+    const [year, month] = monthStr.split('-');
+    const date = new Date(Number(year), Number(month) - 1, 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const handleExportPDF = () => {
+    if (!staffInfo) return;
+
+    const monthLabel = getMonthLabel(selectedMonth);
+    const title = `Staff Activity & Conversion Monthly Report - ${staffInfo.name}`;
+    
+    const tableHeaders = ['ID', 'Type', 'Guest Name', 'Phone', 'Branch', 'Stay Dates', 'Rooms', 'Tariff', 'Advance', 'Status', 'Date Logged'];
+    const tableRows = filteredRecords.map(item => [
+      `#${item.id}`,
+      item.isEnquiryOnly ? 'Enquiry' : 'Reservation',
+      item.guest_name,
+      item.guest_phone,
+      item.location || 'Ooty',
+      `${formatDate(item.check_in)} → ${formatDate(item.check_out)}`,
+      `${item.num_rooms || 1} x ${item.room_type || 'Std'}`,
+      `₹ ${Number(item.total_tariff || 0).toLocaleString()}`,
+      `₹ ${Number(item.advance || 0).toLocaleString()}`,
+      item.status,
+      formatDate(item.created_at)
+    ]);
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${title} - ${monthLabel}</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 28px; color: #1a1a2e; background: #fff; }
+    .header { border-bottom: 3px solid #1e3a5f; padding-bottom: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .brand { font-size: 24px; font-weight: 900; color: #1e3a5f; letter-spacing: 1px; }
+    .brand-sub { font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+    .report-title { font-size: 16px; font-weight: 900; color: #d97706; text-align: right; }
+    .period-badge { display: inline-block; background: #e8eff7; color: #1e3a5f; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-top: 4px; }
+    
+    .profile-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
+    .profile-name { font-size: 16px; font-weight: 900; color: #1e3a5f; }
+    .profile-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; text-align: center; }
+    .stat-val { font-size: 20px; font-weight: 900; color: #1e3a5f; margin-top: 4px; }
+    .stat-val.rev { color: #2a7e3b; }
+    .stat-val.rate { color: #d97706; }
+    .stat-label { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+    th { background: #1e3a5f; color: #ffffff; padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 7px 10px; border-bottom: 1px solid #e2e8f0; }
+    tr:nth-child(even) { background: #f8fafc; }
+    .footer { margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 10px; color: #94a3b8; display: flex; justify-content: space-between; }
+    @media print {
+      body { padding: 12px; }
+      @page { margin: 1cm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="brand">DRIZZLE DROP INN</div>
+      <div class="brand-sub">Hotel Management System</div>
+    </div>
+    <div style="text-align: right;">
+      <div class="report-title">STAFF MONTHLY REPORT</div>
+      <div class="period-badge">Report Period: ${monthLabel}</div>
+    </div>
+  </div>
+
+  <div class="profile-card">
+    <div>
+      <div class="profile-name">${staffInfo.name} ${staffInfo.id !== 'ALL' ? `(Staff ID: #${staffInfo.id})` : ''}</div>
+      <div class="profile-meta">Role: <strong>${staffInfo.role.toUpperCase()}</strong> | Email: ${staffInfo.email || '--'}</div>
+    </div>
+    <div style="text-align: right; font-size: 11px; color: #64748b;">
+      Generated: <strong>${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</strong><br />
+      Total Activity Records: <strong>${filteredRecords.length}</strong>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Enquiries Attended</div>
+      <div class="stat-val">${stats.enquiriesAttended}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Converted Bookings</div>
+      <div class="stat-val">${stats.convertedToReservation}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Conversion Rate</div>
+      <div class="stat-val rate">${stats.conversionRate}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Revenue Generated</div>
+      <div class="stat-val rev">₹ ${stats.totalRevenue.toLocaleString()}</div>
+    </div>
+  </div>
+
+  <h3 style="font-size: 13px; font-weight: 800; color: #1e3a5f; margin: 16px 0 6px;">Detailed Records Breakdown (${filteredRecords.length} entries)</h3>
+  <table>
+    <thead>
+      <tr>
+        ${tableHeaders.map(h => `<th>${h}</th>`).join('')}
+      </tr>
+    </thead>
+    <tbody>
+      ${tableRows.length > 0 
+        ? tableRows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')
+        : '<tr><td colspan="11" style="text-align:center; padding: 20px; color: #888;">No records found for this period</td></tr>'
+      }
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <span>Drizzle Drop Inn - Performance Record (${monthLabel})</span>
+    <span>Generated by ${currentUser?.full_name || 'System'}</span>
+  </div>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) {
+      toast.error('Popup blocked! Please allow popups to export report.');
+      return;
+    }
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 350);
+    toast.success(`Monthly report for ${staffInfo.name} (${monthLabel}) opened for PDF printing/download!`);
+  };
+
+  const handleExportCSV = () => {
+    if (!staffInfo) return;
+    const monthLabel = getMonthLabel(selectedMonth);
+    const safeName = staffInfo.name.replace(/[^a-zA-Z0-9]/g, '_');
+    const filename = `monthly-record-${safeName}-${selectedMonth}`;
+    const headers = [
+      'Record ID',
+      'Record Type',
+      'Guest Name',
+      'Phone',
+      'Email',
+      'Location',
+      'Check-In',
+      'Check-Out',
+      'Rooms',
+      'Tariff (Rs)',
+      'Advance (Rs)',
+      'Status',
+      'Logged Date',
+      'Staff Member'
+    ];
+    const rows = filteredRecords.map(item => [
+      item.id,
+      item.isEnquiryOnly ? 'Enquiry' : 'Reservation',
+      item.guest_name,
+      item.guest_phone,
+      item.guest_email || '',
+      item.location || 'Ooty',
+      item.check_in,
+      item.check_out,
+      item.num_rooms || 1,
+      item.total_tariff || 0,
+      item.advance || 0,
+      item.status,
+      item.created_at,
+      item.creator_name || staffInfo.name
+    ]);
+
+    exportToCSV(filename, headers, rows);
+    toast.success(`CSV exported for ${staffInfo.name} (${monthLabel})!`);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Header & Staff Profile Banner */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-border-subtle pb-6">
+      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-border-subtle pb-6">
         <div>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-elegant-gold/20 border border-elegant-gold/30 flex items-center justify-center text-elegant-gold shadow-lg shadow-elegant-gold/10">
               <ClipboardList className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-4xl font-black text-primary tracking-tight">Staff Activity & Conversion Record</h2>
+              <h2 className="text-3xl md:text-4xl font-black text-primary tracking-tight">Staff Activity & Conversion Record</h2>
               <p className="text-soft-slate text-sm font-medium mt-0.5">
                 Staff login performance tracking & enquiry to reservation conversion record
               </p>
@@ -191,26 +386,81 @@ const RecordPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Admin Staff Filter Selector */}
-        {currentUser?.role === 'admin' && (
-          <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl border border-border-subtle shadow-sm">
-            <User className="w-4 h-4 text-elegant-gold ml-2" />
-            <span className="text-xs font-bold text-soft-slate uppercase tracking-wider">Select Staff:</span>
-            <select
-              className="bg-background border border-border-subtle text-primary font-bold text-sm rounded-xl py-2 px-3 focus:ring-2 focus:ring-elegant-gold outline-none cursor-pointer"
-              value={selectedStaffId}
-              onChange={e => setSelectedStaffId(e.target.value)}
-            >
-              <option value="">My Record ({currentUser.full_name})</option>
-              <option value="all">All Staff Members</option>
-              {allStaff.map(st => (
-                <option key={st.id} value={st.id}>
-                  Staff #{st.id}: {st.full_name} ({st.email})
-                </option>
-              ))}
-            </select>
+        {/* Action Controls: Staff Selector, Month Selector, Export Buttons */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Admin Staff Filter Selector */}
+          {currentUser?.role === 'admin' && (
+            <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-border-subtle shadow-sm">
+              <User className="w-4 h-4 text-elegant-gold ml-1" />
+              <span className="text-xs font-bold text-soft-slate uppercase tracking-wider">Staff:</span>
+              <select
+                className="bg-background border border-border-subtle text-primary font-bold text-xs rounded-xl py-2 px-2.5 focus:ring-2 focus:ring-elegant-gold outline-none cursor-pointer"
+                value={selectedStaffId}
+                onChange={e => setSelectedStaffId(e.target.value)}
+              >
+                <option value="">My Record ({currentUser.full_name})</option>
+                <option value="all">All Staff Members</option>
+                {allStaff.map(st => (
+                  <option key={st.id} value={st.id}>
+                    Staff #{st.id}: {st.full_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Month Filter Selector (for both Admin & Staff) */}
+          <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-border-subtle shadow-sm">
+            <Calendar className="w-4 h-4 text-elegant-gold ml-1" />
+            <span className="text-xs font-bold text-soft-slate uppercase tracking-wider">Month:</span>
+            <input
+              type="month"
+              value={selectedMonth === 'all' ? '' : selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value || 'all')}
+              className="bg-background border border-border-subtle text-primary font-bold text-xs rounded-xl py-1.5 px-2.5 focus:ring-2 focus:ring-elegant-gold outline-none cursor-pointer"
+            />
+            {selectedMonth !== 'all' ? (
+              <button
+                onClick={() => setSelectedMonth('all')}
+                className="text-[10px] font-bold text-soft-slate hover:text-primary bg-gray-100 hover:bg-gray-200 px-2 py-1.5 rounded-lg transition-colors"
+                title="View All Months"
+              >
+                All Time
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  const now = new Date();
+                  setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
+                }}
+                className="text-[10px] font-bold text-elegant-gold hover:underline px-1"
+                title="Filter by Current Month"
+              >
+                This Month
+              </button>
+            )}
           </div>
-        )}
+
+          {/* Export Monthly Report Buttons (for both Admin & Staff) */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl font-bold text-xs shadow-md shadow-primary/20 hover:scale-[1.02] transition-transform cursor-pointer"
+              title="Download Monthly Report as PDF"
+            >
+              <Printer className="w-4 h-4 text-elegant-gold" />
+              <span>Export Monthly Report</span>
+            </button>
+            <button
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 px-3 py-2.5 bg-white border border-border-subtle text-primary hover:border-elegant-gold hover:text-elegant-gold rounded-xl font-bold text-xs shadow-sm transition-all cursor-pointer"
+              title="Download Records as CSV Spreadsheet"
+            >
+              <Download className="w-4 h-4" />
+              <span>CSV</span>
+            </button>
+          </div>
+        </div>
       </header>
 
       {/* Logged-In Staff Profile Info Card */}
