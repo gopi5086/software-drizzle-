@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import api from '../api/axios';
 import ReservationReceipt, { type ReceiptData } from '../components/ReservationReceipt';
+import LocationPickerModal from '../components/LocationPickerModal';
 import { captureReceiptAsBlob, sendReceiptViaWhatsApp } from '../utils/invoiceCapture';
 
 interface Reservation {
@@ -70,6 +71,7 @@ const Reservations: React.FC = () => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('All');
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<ReceiptData | null>(null);
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(null);
 
@@ -353,7 +355,7 @@ const Reservations: React.FC = () => {
         </div>
         <div className="flex gap-4">
           <button
-            onClick={() => navigate('/create-reservation')}
+            onClick={() => setShowLocationModal(true)}
             className="flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
           >
             <Plus className="w-5 h-5 text-elegant-gold" />
@@ -592,6 +594,11 @@ const Reservations: React.FC = () => {
           </div>
         </div>
       )}
+
+      <LocationPickerModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+      />
     </div>
   );
 };
