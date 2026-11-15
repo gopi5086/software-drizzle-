@@ -33,17 +33,40 @@ transporter.verify((error) => {
   }
 });
 
+const parseDate = (val) => {
+  if (!val) return null;
+  if (val instanceof Date) {
+    return isNaN(val.getTime()) ? null : val;
+  }
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1;
+      const day = parseInt(match[3], 10);
+      return new Date(year, month, day);
+    }
+  }
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const formatDate = (date) => {
+  const d = parseDate(date);
+  if (!d) return '--';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }).replace(/ /g, '-');
+};
+
 exports.sendInvoiceEmail = async (res) => {
   if (!res.guest_email) return;
 
   const invoiceNo = `DDI-${String(res.id).padStart(4, '0')}`;
-  const checkInDate = new Date(res.check_in + 'T00:00:00');
-  const checkOutDate = new Date(res.check_out + 'T00:00:00');
-  const nights = Math.max(1, Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)));
-  
-  const formatDate = (date) => {
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }).replace(/ /g, '-');
-  };
+  const checkInDate = parseDate(res.check_in);
+  const checkOutDate = parseDate(res.check_out);
+  const nights = (checkInDate && checkOutDate)
+    ? Math.max(1, Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)))
+    : 1;
 
   const balanceDue = (res.total_tariff || 0) - (res.advance || 0);
   
@@ -221,12 +244,8 @@ exports.sendReceiptEmail = async (res) => {
   if (!res.guest_email) return;
 
   const receiptNo = `REC-${String(res.id).padStart(4, '0')}`;
-  const checkInDate = new Date(res.check_in + 'T00:00:00');
-  const checkOutDate = new Date(res.check_out + 'T00:00:00');
-  
-  const formatDate = (date) => {
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }).replace(/ /g, '-');
-  };
+  const checkInDate = parseDate(res.check_in);
+  const checkOutDate = parseDate(res.check_out);
 
   const balanceDue = (res.total_tariff || 0) - (res.advance || 0);
   const details = typeof res.room_details === 'string' ? JSON.parse(res.room_details) : (res.room_details || []);
@@ -412,12 +431,11 @@ exports.sendEnquiryEmail = async (enq) => {
   if (!enq.guest_email) return null;
 
   const quoteNo = `QTE-${String(enq.id).padStart(4, '0')}`;
-  const checkInDate = new Date(enq.check_in + 'T00:00:00');
-  const checkOutDate = new Date(enq.check_out + 'T00:00:00');
-  const nights = Math.max(1, Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)));
-
-  const formatDate = (date) =>
-    date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }).replace(/ /g, '-');
+  const checkInDate = parseDate(enq.check_in);
+  const checkOutDate = parseDate(enq.check_out);
+  const nights = (checkInDate && checkOutDate)
+    ? Math.max(1, Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)))
+    : 1;
 
   const balanceDue = (enq.total_tariff || 0) - (enq.advance || 0);
   const upiUrl = `upi://pay?pa=9962822355@okbizaxis&pn=DrizzleDrop%20Inn${balanceDue > 0 ? `&am=${balanceDue}` : ''}`;
