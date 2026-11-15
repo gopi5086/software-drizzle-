@@ -12,7 +12,8 @@ interface InvoiceData {
   numRooms: number;
   roomType: string;
   roomNo: string;
-  breakfast: boolean;
+  breakfast?: string;
+  breakfastAmount?: number;
   extraBed: boolean;
   rate: number;
   foodBill: number;
@@ -86,7 +87,7 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ data }) => {
 
       <div className="mb-8 p-4 bg-gray-50 rounded-lg border-l-4 border-elegant-gold">
          <p className="text-[10px] font-bold text-soft-slate uppercase mb-1">The above rate includes:</p>
-         <p className="text-xs font-bold text-primary">Breakfast, Tax{data.extraBed ? ', Extra Bed Charge (₹500)' : ''}</p>
+         <p className="text-xs font-bold text-primary">{data.breakfast ? `${data.breakfast}, ` : ''}Tax{data.extraBed ? ', Extra Bed Charge (₹500)' : ''}{data.breakfastAmount && data.breakfastAmount > 0 ? `, Breakfast Charge (₹${data.breakfastAmount})` : ''}</p>
       </div>
 
       {/* Payment & QR Section */}

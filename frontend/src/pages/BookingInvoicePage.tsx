@@ -27,6 +27,7 @@ interface Reservation {
   stay_cosy_amount?: number;
   check_in_time?: string;
   check_out_time?: string;
+  location?: string;
 }
 
 
@@ -107,6 +108,7 @@ const BookingInvoicePage: React.FC = () => {
     balanceDue: Number(res.total_tariff) - Number(res.advance),
     checkInTime: res.check_in_time,
     checkOutTime: res.check_out_time,
+    location: res.location || 'Ooty',
   };
 
   return (

@@ -5,14 +5,15 @@ import {
   BookOpen, 
   CreditCard,
   Download,
+  PlusCircle,
   UserPlus,
   Loader2
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
-import Modal from '../components/Modal';
 import { exportToPDF, timeAgo } from '../utils/export';
+import LocationPickerModal from '../components/LocationPickerModal';
 
 interface Stats {
   totalReservations: number;
@@ -33,8 +34,9 @@ interface Activity {
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [stats, setStats] = useState<Stats>({
     totalReservations: 0,
     monthlyRevenue: 0,
@@ -94,7 +96,7 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  return (
+  return (<>
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <section className="flex justify-between items-end">
         <div>
@@ -112,31 +114,14 @@ const Dashboard: React.FC = () => {
             Export Daily Report
           </button>
           <button 
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setShowLocationModal(true)}
             className="flex items-center gap-2 px-6 py-3 bg-elegant-gold text-deep-charcoal rounded-xl font-bold text-sm hover:scale-105 transition-all shadow-lg shadow-elegant-gold/10"
           >
-            <UserPlus className="w-4 h-4" />
-            New Boarding
+            <PlusCircle className="w-4 h-4" />
+            Quotation for Enquiry
           </button>
         </div>
       </section>
-
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        title="New Guest Boarding (Check-in)"
-      >
-        <p className="text-sm text-soft-slate mb-4">
-          Create a reservation from the Reservations page to check in a guest.
-        </p>
-        <button
-          type="button"
-          onClick={() => { setIsModalOpen(false); window.location.href = '/reservations/new'; }}
-          className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:scale-[1.01] transition-transform"
-        >
-          Go to New Reservation
-        </button>
-      </Modal>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="glass-card p-8 rounded-2xl flex flex-col justify-between">
@@ -261,7 +246,12 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+
+    <LocationPickerModal
+      isOpen={showLocationModal}
+      onClose={() => setShowLocationModal(false)}
+    />
+  </>);
 };
 
 export default Dashboard;

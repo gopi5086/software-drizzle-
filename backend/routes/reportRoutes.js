@@ -9,5 +9,7 @@ router.get('/finance', auth, reportController.getFinanceOverview);
 router.get('/invoices', auth, reportController.getInvoices);
 router.get('/analytics', auth, reportController.getReportsData);
 router.get('/staff-revenue', auth, reportController.getStaffRevenueReport);
+router.get('/staff-record', auth, reportController.getStaffRecordReport);
 
 module.exports = router;
+

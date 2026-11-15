@@ -25,7 +25,10 @@ import api from '../api/axios';
 import ReservationReceipt, { type ReceiptData } from '../components/ReservationReceipt';
 
 
-const roomTypes = ['Standard Room', 'Deluxe Room', 'Triple Room'];
+const roomTypes = [
+  'Deluxe Room', 'Super Deluxe Room', 'Family Room', 'Std. Room',
+  'Std Room', 'Del. Bal Room', 'Fam Room', 'Del. Villa'
+];
 
 const ReservationReceiptPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +39,7 @@ const ReservationReceiptPage: React.FC = () => {
     guestName: '',
     guestPhone: '',
     guestEmail: '',
-    rooms: [{ type: 'Deluxe Room', count: 1, rate: 2500 }],
+    rooms: [{ type: 'Std Room', count: 1, rate: 2500 }],
     checkIn: '',
     checkOut: '',
     adults: 1,
@@ -87,7 +90,7 @@ const ReservationReceiptPage: React.FC = () => {
   const addRoom = () => {
     setFormData({
       ...formData,
-      rooms: [...formData.rooms, { type: 'Standard Room', count: 1, rate: 2000 }]
+      rooms: [...formData.rooms, { type: 'Std Room', count: 1, rate: 2000 }]
     });
   };
 

@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 exports.getStaff = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT id, full_name, email, role, phone, status, created_at FROM users ORDER BY created_at DESC`
+      `SELECT id, full_name, email, role, phone, branch_location, status, created_at FROM users ORDER BY created_at DESC`
     );
     res.json(rows);
   } catch (error) {
@@ -31,23 +31,24 @@ exports.getStaffStats = async (req, res) => {
 };
 
 exports.createStaff = async (req, res) => {
-  const { full_name, email, password, role, phone } = req.body;
+  const { full_name, email, password, role, phone, branch_location } = req.body;
 
   if (!full_name || !email || !password) {
     return res.status(400).json({ message: 'Name, email, and password are required' });
   }
 
   const dbRole = role === 'admin' || role === 'Admin' ? 'admin' : 'staff';
+  const dbBranch = branch_location || 'Chennai';
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const [result] = await pool.query(
-      'INSERT INTO users (full_name, email, password, role, phone) VALUES (?, ?, ?, ?, ?)',
-      [full_name, email, hashedPassword, dbRole, phone || null]
+      'INSERT INTO users (full_name, email, password, role, phone, branch_location) VALUES (?, ?, ?, ?, ?, ?)',
+      [full_name, email, hashedPassword, dbRole, phone || null, dbBranch]
     );
 
     const [rows] = await pool.query(
-      'SELECT id, full_name, email, role, phone, status, created_at FROM users WHERE id = ?',
+      'SELECT id, full_name, email, role, phone, branch_location, status, created_at FROM users WHERE id = ?',
       [result.insertId]
     );
     res.status(201).json(rows[0]);
@@ -61,7 +62,7 @@ exports.createStaff = async (req, res) => {
 
 exports.updateStaff = async (req, res) => {
   const { id } = req.params;
-  const { full_name, role, phone, status, password } = req.body;
+  const { full_name, role, phone, status, password, branch_location } = req.body;
 
   try {
     // Check if requester is admin if trying to change status or role or password
@@ -71,6 +72,11 @@ exports.updateStaff = async (req, res) => {
 
     let query = 'UPDATE users SET full_name = ?, phone = ?';
     let params = [full_name, phone];
+
+    if (branch_location) {
+      query += ', branch_location = ?';
+      params.push(branch_location);
+    }
 
     if (req.user.role === 'admin') {
       if (role) { query += ', role = ?'; params.push(role); }
@@ -91,6 +97,7 @@ exports.updateStaff = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.deleteStaff = async (req, res) => {
   const { id } = req.params;

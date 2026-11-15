@@ -14,13 +14,13 @@ import {
   CreditCard,
   Calculator,
   Mail,
-  PlusSquare,
   Trash2,
   Plus,
   LogOut,
-  Loader2
+  Loader2,
+  MapPin
 } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import UnifiedInvoice, { type UnifiedInvoiceData } from '../components/UnifiedInvoice';
 import Modal from '../components/Modal';
@@ -31,6 +31,9 @@ import logo from '../assets/logo.png'; // Use logo.png asset
 const CreateReservationPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = !!id;
+
   const handleLogout = () => {
     navigate('/');
   };
@@ -45,10 +48,12 @@ const CreateReservationPage: React.FC = () => {
     checkOut: '',
     adults: 1,
     children: 0,
-    rooms: [{ type: 'Deluxe Room', count: 1, rate: 2500 }],
+    rooms: [{ type: (location.state as any)?.location === 'Chennai' ? 'Deluxe Room' : 'Std Room', count: 1, rate: 2500 }],
     roomNo: '',
-    breakfast: true,
+    breakfast: 'Breakfast',
+    breakfastAmount: 0,
     extraBed: false,
+    extraBedAmount: 0,
     specialRequirements: '',
     specialRequirementsAmount: 0,
     earlyCheckinAmount: 0,
@@ -61,15 +66,87 @@ const CreateReservationPage: React.FC = () => {
     checkOutTime: '11:00 A.M',
     foodBill: 0,
     advance: 0,
-    status: 'Confirmed',
-    bookedBy: 'Manager',
+    status: 'Pending',
+    bookedBy: 'Direct',
+    location: (location.state as any)?.location || 'Chennai',
   });
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSearchingGuest, setIsSearchingGuest] = useState(false);
 
+  const formatDateForInput = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Load existing reservation in edit mode
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchReservation = async () => {
+        try {
+          const res = await api.get(`/reservations/${id}`);
+          const data = res.data;
+          
+          let parsedRooms = [{ type: 'Std Room', count: 1, rate: 2500 }];
+          if (data.room_details) {
+            try {
+              if (typeof data.room_details === 'string') {
+                parsedRooms = JSON.parse(data.room_details);
+              } else if (Array.isArray(data.room_details)) {
+                parsedRooms = data.room_details;
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          } else if (data.room_type) {
+            parsedRooms = [{ type: data.room_type, count: data.num_rooms || 1, rate: Number(data.total_tariff) || 2500 }];
+          }
+
+          setFormData({
+            guestName: data.guest_name || '',
+            guestPhone: data.guest_phone || '',
+            guestEmail: data.guest_email || '',
+            checkIn: data.check_in ? formatDateForInput(data.check_in) : '',
+            checkOut: data.check_out ? formatDateForInput(data.check_out) : '',
+            adults: Number(data.adults) || 1,
+            children: Number(data.children) || 0,
+            rooms: parsedRooms,
+            roomNo: '', // Not in DB
+            breakfast: data.breakfast !== undefined && data.breakfast !== null ? data.breakfast : 'Breakfast',
+            breakfastAmount: Number(data.breakfast_amount) || 0,
+            extraBed: false,
+    extraBedAmount: 0, // Not in DB
+            specialRequirements: data.special_requirements || '',
+            specialRequirementsAmount: Number(data.special_requirements_amount) || 0,
+            earlyCheckinAmount: Number(data.early_checkin_amount) || 0,
+            lateCheckoutAmount: Number(data.late_checkout_amount) || 0,
+            stayCosyAmount: Number(data.stay_cosy_amount) || 0,
+            totalTariff: Number(data.total_tariff) || 0,
+            address: data.address || '',
+            idProof: data.id_proof || '',
+            checkInTime: data.check_in_time || '12:00 Noon',
+            checkOutTime: data.check_out_time || '11:00 A.M',
+            foodBill: 0, // Not in DB
+            advance: Number(data.advance) || 0,
+            status: data.status || 'Confirmed',
+            bookedBy: data.booked_by || 'Direct',
+            location: data.location || 'Ooty',
+          });
+        } catch (err: any) {
+          toast.error('Failed to fetch reservation details: ' + (err.response?.data?.message || err.message));
+        }
+      };
+      fetchReservation();
+    }
+  }, [id, isEditMode]);
+
   // Auto-fill from GuestLookupPage prefill state
   useEffect(() => {
+    if (isEditMode) return;
     const prefill = (location.state as any)?.prefill;
     if (prefill) {
       setFormData(prev => ({
@@ -113,7 +190,7 @@ const CreateReservationPage: React.FC = () => {
 
   // Derived data
   const nights = useMemo(() => {
-    if (!formData.checkIn || !formData.checkOut) return 0;
+    if (!formData.checkIn || !formData.checkOut) return 1;
     const start = new Date(formData.checkIn);
     const end = new Date(formData.checkOut);
     const diffTime = Math.abs(end.getTime() - start.getTime());
@@ -122,11 +199,11 @@ const CreateReservationPage: React.FC = () => {
   }, [formData.checkIn, formData.checkOut]);
 
   const totalRoomsCount = useMemo(() => {
-    return formData.rooms.reduce((acc, room) => acc + room.count, 0);
+    return formData.rooms.reduce((acc, room) => acc + (Number(room.count) || 1), 0);
   }, [formData.rooms]);
 
   const stayCost = useMemo(() => {
-    return formData.rooms.reduce((acc, room) => acc + (room.rate * room.count * nights), 0);
+    return formData.rooms.reduce((acc, room) => acc + ((Number(room.rate) || 0) * (Number(room.count) || 1) * Math.max(1, nights)), 0);
   }, [formData.rooms, nights]);
 
   const autoTotalTariff = useMemo(() => {
@@ -134,19 +211,22 @@ const CreateReservationPage: React.FC = () => {
            formData.specialRequirementsAmount +
            formData.earlyCheckinAmount +
            formData.lateCheckoutAmount +
-           formData.stayCosyAmount;
-  }, [stayCost, formData.specialRequirementsAmount, formData.earlyCheckinAmount, formData.lateCheckoutAmount, formData.stayCosyAmount]);
+           formData.stayCosyAmount +
+           (Number(formData.breakfastAmount) || 0);
+  }, [stayCost, formData.specialRequirementsAmount, formData.earlyCheckinAmount, formData.lateCheckoutAmount, formData.stayCosyAmount, formData.breakfastAmount]);
+
+  const extraBedCharge = Number(formData.extraBedAmount) || (formData.extraBed ? 500 : 0);
 
   const netPay = useMemo(() => {
-    const extraBedCharge = formData.extraBed ? 500 : 0; 
     return stayCost + 
            formData.foodBill + 
            extraBedCharge + 
            formData.specialRequirementsAmount + 
            formData.earlyCheckinAmount + 
            formData.lateCheckoutAmount +
-           formData.stayCosyAmount;
-  }, [stayCost, formData.foodBill, formData.extraBed, formData.specialRequirementsAmount, formData.earlyCheckinAmount, formData.lateCheckoutAmount, formData.stayCosyAmount]);
+           formData.stayCosyAmount +
+           (Number(formData.breakfastAmount) || 0);
+  }, [stayCost, formData.foodBill, extraBedCharge, formData.specialRequirementsAmount, formData.earlyCheckinAmount, formData.lateCheckoutAmount, formData.stayCosyAmount, formData.breakfastAmount]);
 
   const balanceDue = useMemo(() => {
     return netPay - formData.advance;
@@ -158,13 +238,15 @@ const CreateReservationPage: React.FC = () => {
     roomType: formData.rooms.length > 0 ? formData.rooms[0].type : '', // Primary type for fallback
     nights,
     totalTariff: netPay,
-    balanceDue
+    balanceDue,
+    location: formData.location
   };
 
   const addRoom = () => {
+    const defaultType = formData.location === 'Chennai' ? 'Deluxe Room' : 'Std Room';
     setFormData({
       ...formData,
-      rooms: [...formData.rooms, { type: 'Standard Room', count: 1, rate: 2000 }]
+      rooms: [...formData.rooms, { type: defaultType, count: 1, rate: 2000 }]
     });
   };
 
@@ -185,7 +267,7 @@ const CreateReservationPage: React.FC = () => {
   const handleSaveConfirmed = async () => {
     setShowConfirmModal(false);
     try {
-      await api.post('/reservations', {
+      const payload = {
         guest_name: formData.guestName,
         guest_email: formData.guestEmail,
         guest_phone: formData.guestPhone,
@@ -207,12 +289,23 @@ const CreateReservationPage: React.FC = () => {
         check_out_time: formData.checkOutTime,
         status: formData.status,
         address: formData.address,
-        id_proof: formData.idProof
-      });
-      toast.success('Booking saved successfully!');
-      navigate('/reservations');
+        id_proof: formData.idProof,
+        breakfast: formData.breakfast,
+        breakfast_amount: formData.breakfastAmount,
+        location: formData.location || 'Ooty'
+      };
+
+      if (isEditMode) {
+        await api.put(`/reservations/${id}`, payload);
+        toast.success('Quotation updated successfully!');
+        navigate('/reservations');
+      } else {
+        await api.post('/enquiries', payload);
+        toast.success('Enquiry registered successfully!');
+        navigate('/enquiries');
+      }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Error saving reservation');
+      toast.error(err.response?.data?.message || 'Error saving quotation');
     }
   };
 
@@ -225,11 +318,9 @@ const CreateReservationPage: React.FC = () => {
     window.print();
   };
 
-  const roomTypes = [
-    'Standard Room',
-    'Deluxe Room',
-    'Triple Room'
-  ];
+  const roomTypesChennai = ['Deluxe Room', 'Super Deluxe Room', 'Family Room', 'Std. Room'];
+  const roomTypesOoty = ['Std Room', 'Del. Bal Room', 'Fam Room', 'Del. Villa'];
+  const roomTypes = formData.location === 'Chennai' ? roomTypesChennai : roomTypesOoty;
 
   return (
     <div className="min-h-screen pb-20 animate-in fade-in duration-700 print:pb-0 print:min-h-0 print:animate-none">
@@ -244,8 +335,8 @@ const CreateReservationPage: React.FC = () => {
           <div className="flex items-center gap-4">
             <img src={logo} alt="Logo" className="h-8 w-8 object-contain" />
             <div>
-              <h2 className="text-3xl font-black text-primary tracking-tight">Create Booking</h2>
-              <p className="text-xs font-bold text-soft-slate uppercase tracking-widest mt-1">Invoice Generator & Reservation Management</p>
+              <h2 className="text-3xl font-black text-primary tracking-tight">{isEditMode ? 'Edit Quotation' : 'Quotation for Enquiry'}</h2>
+              <p className="text-xs font-bold text-soft-slate uppercase tracking-widest mt-1">Quotation Generator & Reservation Management</p>
             </div>
           </div>
         </div>
@@ -270,7 +361,7 @@ const CreateReservationPage: React.FC = () => {
             className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
           >
             <Save className="w-4 h-4 text-elegant-gold" />
-            Save Booking
+            {isEditMode ? 'Update Quotation' : 'Save Quotation'}
           </button>
         </div>
       </header>
@@ -278,7 +369,7 @@ const CreateReservationPage: React.FC = () => {
       <Modal 
         isOpen={showConfirmModal} 
         onClose={() => setShowConfirmModal(false)}
-        title="Confirm Booking Details"
+        title="Confirm Quotation Details"
       >
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -301,6 +392,10 @@ const CreateReservationPage: React.FC = () => {
             <div className="space-y-1">
               <p className="text-soft-slate uppercase text-[10px] font-bold">Rooms</p>
               <p className="font-bold text-primary">{totalRoomsCount} ({formData.rooms[0]?.type})</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-soft-slate uppercase text-[10px] font-bold">Location</p>
+              <p className="font-bold text-elegant-gold">{formData.location || 'Ooty'}</p>
             </div>
             <div className="space-y-1">
               <p className="text-soft-slate uppercase text-[10px] font-bold">Nights</p>
@@ -334,7 +429,7 @@ const CreateReservationPage: React.FC = () => {
               onClick={handleSaveConfirmed}
               className="flex-1 py-4 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
             >
-              Confirm & Save
+              Confirm & Save Quotation
             </button>
           </div>
         </div>
@@ -426,9 +521,14 @@ const CreateReservationPage: React.FC = () => {
 
             {/* Booking Dates & Rooms */}
             <div className="space-y-6">
-              <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-                <Calendar className="w-4 h-4 text-elegant-gold" />
-                <h3 className="text-sm font-black text-primary uppercase tracking-widest">Stay Information</h3>
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-elegant-gold" />
+                  <h3 className="text-sm font-black text-primary uppercase tracking-widest">Stay Information</h3>
+                </div>
+                <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full flex items-center gap-1 border border-amber-200">
+                  <MapPin className="w-3 h-3 text-amber-600" /> Chennai Branch
+                </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -475,19 +575,21 @@ const CreateReservationPage: React.FC = () => {
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Adults</label>
                     <input
-                      type="number" min="1"
+                      type="number" min="1" placeholder="1"
                       className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold"
-                      value={formData.adults}
-                      onChange={e => setFormData({ ...formData, adults: parseInt(e.target.value) || 1 })}
+                      value={formData.adults === 0 ? '' : formData.adults}
+                      onFocus={e => e.target.select()}
+                      onChange={e => setFormData({ ...formData, adults: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })}
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Children</label>
                     <input
-                      type="number" min="0"
+                      type="number" min="0" placeholder="0"
                       className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold"
-                      value={formData.children}
-                      onChange={e => setFormData({ ...formData, children: parseInt(e.target.value) || 0 })}
+                      value={formData.children === 0 ? '' : formData.children}
+                      onFocus={e => e.target.select()}
+                      onChange={e => setFormData({ ...formData, children: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })}
                     />
                   </div>
                 </div>
@@ -524,19 +626,21 @@ const CreateReservationPage: React.FC = () => {
                         <div className="md:col-span-2 space-y-2">
                           <label className="text-[9px] font-bold text-soft-slate uppercase tracking-widest">Count</label>
                           <input
-                            type="number" min="1"
+                            type="number" min="1" placeholder="1"
                             className="w-full bg-background border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-elegant-gold font-black text-center"
-                            value={room.count}
-                            onChange={e => updateRoom(idx, 'count', parseInt(e.target.value) || 1)}
+                            value={room.count === 0 ? '' : room.count}
+                            onFocus={e => e.target.select()}
+                            onChange={e => updateRoom(idx, 'count', e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                           />
                         </div>
                         <div className="md:col-span-4 space-y-2">
                           <label className="text-[9px] font-bold text-soft-slate uppercase tracking-widest">Rate (₹)</label>
                           <input
-                            type="number"
+                            type="number" placeholder="0"
                             className="w-full bg-background border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-elegant-gold font-black"
-                            value={room.rate}
-                            onChange={e => updateRoom(idx, 'rate', parseInt(e.target.value) || 0)}
+                            value={room.rate === 0 ? '' : room.rate}
+                            onFocus={e => e.target.select()}
+                            onChange={e => updateRoom(idx, 'rate', e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
                           />
                         </div>
                         <div className="md:col-span-1 flex justify-center pb-1">
@@ -568,38 +672,42 @@ const CreateReservationPage: React.FC = () => {
                 </div>
 
                 <div className="md:col-span-2 space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border-subtle">
-                    <div className="flex items-center gap-3">
+                  <div className="p-6 bg-background rounded-2xl border border-border-subtle space-y-4">
+                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
                       <Coffee className="w-5 h-5 text-elegant-gold" />
                       <div>
-                        <p className="text-xs font-black text-primary">Include Breakfast</p>
-                        <p className="text-[10px] text-soft-slate font-bold uppercase tracking-widest">Complementary for all guests</p>
+                        <p className="text-xs font-black text-primary">Breakfast Configuration</p>
+                        <p className="text-[10px] text-soft-slate font-bold uppercase tracking-widest">Configure breakfast plan and extra charges</p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, breakfast: !formData.breakfast })}
-                      className={`w-12 h-6 rounded-full transition-colors relative ${formData.breakfast ? 'bg-elegant-gold' : 'bg-gray-300'}`}
-                    >
-                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.breakfast ? 'right-1' : 'left-1'}`} />
-                    </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                      <div className="space-y-1 md:col-span-2">
+                        <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Meal Plan</label>
+                        <select
+                          className="w-full bg-background border border-border-subtle rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-elegant-gold text-primary font-bold appearance-none"
+                          value={formData.breakfast}
+                          onChange={e => setFormData({ ...formData, breakfast: e.target.value })}
+                        >
+                          <option value="Breakfast">Breakfast</option>
+                          <option value="No Breakfast">No Breakfast</option>
+                          <option value="MAP">MAP</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border-subtle">
-                    <div className="flex items-center gap-3">
-                      <PlusSquare className="w-5 h-5 text-elegant-gold" />
-                      <div>
-                        <p className="text-xs font-black text-primary">Extra Bed Option</p>
-                        <p className="text-[10px] text-soft-slate font-bold uppercase tracking-widest">Add extra bed for current room</p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, extraBed: !formData.extraBed })}
-                      className={`w-12 h-6 rounded-full transition-colors relative ${formData.extraBed ? 'bg-elegant-gold' : 'bg-gray-300'}`}
-                    >
-                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.extraBed ? 'right-1' : 'left-1'}`} />
-                    </button>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Extra Bed Amount (₹)</label>
+                    <input
+                      type="number" min="0" placeholder="0"
+                      className="w-full bg-background border border-border-subtle rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-elegant-gold text-primary font-bold"
+                      value={formData.extraBedAmount === 0 ? '' : formData.extraBedAmount}
+                      onFocus={e => e.target.select()}
+                      onChange={e => {
+                        const val = e.target.value === '' ? 0 : parseFloat(e.target.value) || 0;
+                        setFormData({ ...formData, extraBedAmount: val, extraBed: val > 0 });
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -615,19 +723,21 @@ const CreateReservationPage: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Early Check-in (₹)</label>
                   <input
-                    type="number"
+                    type="number" placeholder="0"
                     className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold text-primary"
-                    value={formData.earlyCheckinAmount}
-                    onChange={e => setFormData({ ...formData, earlyCheckinAmount: parseInt(e.target.value) || 0 })}
+                    value={formData.earlyCheckinAmount === 0 ? '' : formData.earlyCheckinAmount}
+                    onFocus={e => e.target.select()}
+                    onChange={e => setFormData({ ...formData, earlyCheckinAmount: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Late Check-out (₹)</label>
                   <input
-                    type="number"
+                    type="number" placeholder="0"
                     className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold text-primary"
-                    value={formData.lateCheckoutAmount}
-                    onChange={e => setFormData({ ...formData, lateCheckoutAmount: parseInt(e.target.value) || 0 })}
+                    value={formData.lateCheckoutAmount === 0 ? '' : formData.lateCheckoutAmount}
+                    onFocus={e => e.target.select()}
+                    onChange={e => setFormData({ ...formData, lateCheckoutAmount: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -643,19 +753,21 @@ const CreateReservationPage: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Special Req. Amount (₹)</label>
                   <input
-                    type="number"
+                    type="number" placeholder="0"
                     className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold text-primary"
-                    value={formData.specialRequirementsAmount}
-                    onChange={e => setFormData({ ...formData, specialRequirementsAmount: parseInt(e.target.value) || 0 })}
+                    value={formData.specialRequirementsAmount === 0 ? '' : formData.specialRequirementsAmount}
+                    onFocus={e => e.target.select()}
+                    onChange={e => setFormData({ ...formData, specialRequirementsAmount: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Food Bill (₹)</label>
                   <input
-                    type="number"
+                    type="number" placeholder="0"
                     className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold text-primary"
-                    value={formData.foodBill}
-                    onChange={e => setFormData({ ...formData, foodBill: parseInt(e.target.value) || 0 })}
+                    value={formData.foodBill === 0 ? '' : formData.foodBill}
+                    onFocus={e => e.target.select()}
+                    onChange={e => setFormData({ ...formData, foodBill: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -669,10 +781,11 @@ const CreateReservationPage: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Extra Charges (₹)</label>
                   <input
-                    type="number"
+                    type="number" placeholder="0"
                     className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold text-primary"
-                    value={formData.stayCosyAmount}
-                    onChange={e => setFormData({ ...formData, stayCosyAmount: parseInt(e.target.value) || 0 })}
+                    value={formData.stayCosyAmount === 0 ? '' : formData.stayCosyAmount}
+                    onFocus={e => e.target.select()}
+                    onChange={e => setFormData({ ...formData, stayCosyAmount: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
@@ -693,20 +806,25 @@ const CreateReservationPage: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Advance Paid (₹)</label>
                   <input
-                    type="number"
+                    type="number" placeholder="0"
                     className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold text-green-600"
-                    value={formData.advance}
-                    onChange={e => setFormData({ ...formData, advance: parseInt(e.target.value) || 0 })}
+                    value={formData.advance === 0 ? '' : formData.advance}
+                    onFocus={e => e.target.select()}
+                    onChange={e => setFormData({ ...formData, advance: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Booking Source</label>
-                  <input
-                    type="text"
-                    className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold"
+                  <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest">Booked By (Source)</label>
+                  <select
+                    className="w-full bg-background border-none rounded-xl py-4 px-6 text-sm focus:ring-2 focus:ring-elegant-gold font-bold appearance-none text-primary"
                     value={formData.bookedBy}
                     onChange={e => setFormData({ ...formData, bookedBy: e.target.value })}
-                  />
+                  >
+                    <option value="Direct">Direct</option>
+                    <option value="Agent">Agent</option>
+                    <option value="Website">Website</option>
+                    <option value="OTA">OTA</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -723,7 +841,23 @@ const CreateReservationPage: React.FC = () => {
                   <span className="font-black text-xl">{nights}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm border-b border-white/10 pb-3">
-                  <span className="text-white/60 font-medium">Net Pay (Rate × Nights + Food):</span>
+                  <span className="text-white/80 font-medium">ROOM Rent:</span>
+                  <span className="font-bold">₹ {stayCost.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm border-b border-white/10 pb-3">
+                  <span className="text-white/80 font-medium">Early Checkin:</span>
+                  <span className="font-bold">₹ {(Number(formData.earlyCheckinAmount) || 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm border-b border-white/10 pb-3">
+                  <span className="text-white/80 font-medium">Late Checkout:</span>
+                  <span className="font-bold">₹ {(Number(formData.lateCheckoutAmount) || 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm border-b border-white/10 pb-3">
+                  <span className="text-white/80 font-medium">Extra Bed:</span>
+                  <span className="font-bold">₹ {extraBedCharge.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm border-b border-white/10 pb-3">
+                  <span className="text-white/60 font-medium">Net Pay:</span>
                   <span className="font-black text-xl">₹ {netPay.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center text-lg pt-2">

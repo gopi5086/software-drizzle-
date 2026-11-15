@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  UserPlus, 
-  ShieldCheck, 
-  Clock, 
-  MoreHorizontal,
+import {
+  Users,
+  UserPlus,
+  ShieldCheck,
+  Clock,
   Mail,
   UserCircle,
-  Loader2
+  Loader2,
+  MapPin,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Modal from '../components/Modal';
@@ -19,6 +21,7 @@ interface StaffMember {
   email: string;
   role: string;
   phone: string;
+  branch_location?: string;
   status: string;
   created_at: string;
 }
@@ -41,6 +44,7 @@ const Staff: React.FC = () => {
     role: 'staff',
     password: '',
     phone: '',
+    branch_location: 'Chennai',
     status: 'active'
   });
 
@@ -70,6 +74,7 @@ const Staff: React.FC = () => {
           full_name: formData.name,
           role: formData.role,
           phone: formData.phone,
+          branch_location: formData.branch_location,
           status: formData.status,
           password: formData.password || undefined // Only send if changed
         });
@@ -81,12 +86,13 @@ const Staff: React.FC = () => {
           password: formData.password,
           role: formData.role,
           phone: formData.phone,
+          branch_location: formData.branch_location,
         });
         toast.success(`Login created for ${formData.name}!`);
       }
       setIsModalOpen(false);
       setEditingStaff(null);
-      setFormData({ name: '', email: '', role: 'staff', password: '', phone: '', status: 'active' });
+      setFormData({ name: '', email: '', role: 'staff', password: '', phone: '', branch_location: 'Chennai', status: 'active' });
       fetchStaff();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to save staff');
@@ -101,6 +107,7 @@ const Staff: React.FC = () => {
       role: member.role,
       password: '', // Don't show password
       phone: member.phone || '',
+      branch_location: member.branch_location || 'Chennai',
       status: member.status
     });
     setIsModalOpen(true);
@@ -122,7 +129,7 @@ const Staff: React.FC = () => {
       <header className="flex justify-between items-center">
         <div>
           <h2 className="text-5xl font-bold text-primary tracking-tight">Staff Management</h2>
-          <p className="text-soft-slate text-lg mt-2">Manage team accounts, roles, and shift assignments.</p>
+          <p className="text-soft-slate text-lg mt-2">Manage team accounts, roles, branch locations, and shift assignments.</p>
         </div>
         <button 
            onClick={() => setIsModalOpen(true)}
@@ -168,6 +175,7 @@ const Staff: React.FC = () => {
                 <tr className="bg-background text-soft-slate text-[10px] font-bold uppercase tracking-widest border-b border-border-subtle">
                   <th className="px-8 py-6">Member</th>
                   <th className="px-8 py-6">Role</th>
+                  <th className="px-8 py-6">Branch Location</th>
                   <th className="px-8 py-6">Status</th>
                   <th className="px-8 py-6 text-right">Actions</th>
                 </tr>
@@ -192,6 +200,12 @@ const Staff: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-8 py-8">
+                      <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-bold flex items-center gap-1.5 w-max">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {member.branch_location || 'Chennai'}
+                      </span>
+                    </td>
+                    <td className="px-8 py-8">
                       <div className="flex items-center gap-2">
                          <div className={`w-2 h-2 rounded-full ${member.status === 'active' ? 'bg-green-500 shadow-sm shadow-green-500/50' : 'bg-gray-300'}`} />
                          <span className="text-xs font-bold text-primary capitalize">{member.status}</span>
@@ -199,19 +213,19 @@ const Staff: React.FC = () => {
                     </td>
                     <td className="px-8 py-8 text-right">
                       <div className="flex justify-end gap-2">
-                        <button 
+                        <button
                           onClick={() => handleEdit(member)}
                           className="p-3 text-soft-slate hover:text-primary bg-background/50 rounded-xl transition-all hover:scale-105"
-                          title="Edit"
+                          title="Edit staff"
                         >
-                          <UserCircle className="w-5 h-5" />
+                          <Pencil className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(member.id)}
                           className="p-3 text-red-400 hover:text-red-500 bg-red-50 rounded-xl transition-all hover:scale-105"
-                          title="Delete"
+                          title="Delete staff"
                         >
-                          <MoreHorizontal className="w-5 h-5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -289,16 +303,28 @@ const Staff: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest pl-1">Account Status</label>
+                    <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest pl-1">Branch Location</label>
                     <select 
-                      value={formData.status}
-                      className="w-full bg-background border-none rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-elegant-gold appearance-none"
-                      onChange={(e) => setFormData({...formData, status: e.target.value})}
+                      value={formData.branch_location}
+                      className="w-full bg-background border-none rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-elegant-gold appearance-none font-bold"
+                      onChange={(e) => setFormData({...formData, branch_location: e.target.value})}
                     >
-                       <option value="active">Active</option>
-                       <option value="inactive">Inactive</option>
+                       <option value="Chennai">Chennai Branch</option>
+                       <option value="Ooty">Ooty Branch</option>
+                       <option value="Both">Both (All Branches)</option>
                     </select>
                   </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-soft-slate uppercase tracking-widest pl-1">Account Status</label>
+                <select 
+                  value={formData.status}
+                  className="w-full bg-background border-none rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-elegant-gold appearance-none"
+                  onChange={(e) => setFormData({...formData, status: e.target.value})}
+                >
+                   <option value="active">Active</option>
+                   <option value="inactive">Inactive</option>
+                </select>
               </div>
            </div>
            <button type="submit" className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.01] transition-transform">
@@ -311,3 +337,4 @@ const Staff: React.FC = () => {
 };
 
 export default Staff;
+

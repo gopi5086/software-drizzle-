@@ -28,6 +28,7 @@ app.get('/', (req, res) => {
 // Import Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/reservations', require('./routes/reservationRoutes'));
+app.use('/api/enquiries', require('./routes/enquiryRoutes'));
 app.use('/api/customers', require('./routes/customerRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/staff', require('./routes/staffRoutes'));

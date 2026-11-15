@@ -7,13 +7,16 @@ import {
   Trash2,
   CheckCircle,
   Mail,
-  Printer,
-  X
+  X,
+  MessageCircle,
+  Edit,
+  Download
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import api from '../api/axios';
 import ReservationReceipt, { type ReceiptData } from '../components/ReservationReceipt';
+import { captureReceiptAsBlob, sendReceiptViaWhatsApp } from '../utils/invoiceCapture';
 
 interface Reservation {
   id: number;
@@ -38,6 +41,7 @@ interface Reservation {
   stay_cosy_amount?: number;
   check_in_time?: string;
   check_out_time?: string;
+  location?: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -89,6 +93,16 @@ const Reservations: React.FC = () => {
     activeTab === 'All' ? true : r.status === activeTab
   );
 
+  const acceptToReservation = async (id: number) => {
+    try {
+      await api.patch(`/reservations/${id}/status`, { status: 'Confirmed' });
+      toast.success('✅ Booking accepted & added to Reservation database!');
+      fetchReservations();
+    } catch {
+      toast.error('Failed to accept booking');
+    }
+  };
+
   const updateStatus = async (id: number, status: string) => {
     try {
       await api.patch(`/reservations/${id}/status`, { status });
@@ -99,6 +113,7 @@ const Reservations: React.FC = () => {
     }
   };
 
+
   const deleteReservation = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this reservation?')) return;
     try {
@@ -107,19 +122,6 @@ const Reservations: React.FC = () => {
       fetchReservations();
     } catch {
       toast.error('Failed to delete reservation');
-    }
-  };
-
-  const sendInvoice = async (id: number) => {
-    try {
-      const promise = api.post(`/reservations/${id}/send-invoice`);
-      toast.promise(promise, {
-        loading: 'Sending invoice email...',
-        success: 'Invoice sent successfully!',
-        error: (err: any) => err.response?.data?.message || 'Failed to send invoice email'
-      });
-    } catch (err: any) {
-      toast.error('Error initiating email process');
     }
   };
 
@@ -170,13 +172,159 @@ const Reservations: React.FC = () => {
       balanceDue: Math.max(0, Number(res.total_tariff) - Number(res.advance || 0)),
       checkInTime: res.check_in_time || '12:00 Noon',
       checkOutTime: res.check_out_time || '11:00 A.M',
-      created_at: res.created_at
+      created_at: res.created_at,
+      location: res.location || 'Ooty'
     });
     setSelectedReservationId(res.id);
   };
 
-  const handleDownloadPDF = () => {
-    window.print();
+  const handleDownloadReceipt = async () => {
+    if (!receiptModalData) return;
+
+    const toastId = toast.loading('Preparing receipt download...');
+    try {
+      const blob = await captureReceiptAsBlob(receiptModalData);
+      if (!blob) {
+        toast.error('Failed to generate receipt image.', { id: toastId });
+        return;
+      }
+
+      const receiptNo = `RCP-${String(selectedReservationId ?? 0).padStart(4, '0')}`;
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = `${receiptNo}-DrizzleDrop-Receipt.png`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 8000);
+      toast.success('✅ Receipt downloaded successfully.', { id: toastId, duration: 4000 });
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to download receipt.', { id: toastId });
+    }
+  };
+
+  const handleWhatsAppReceipt = async () => {
+    if (!receiptModalData || !selectedReservationId) return;
+
+    let phone = (receiptModalData.guestPhone || '').replace(/[\s\-\(\)]/g, '');
+    if (phone.startsWith('+')) {
+      phone = phone.slice(1);
+    } else if (phone.length === 10) {
+      phone = '91' + phone;
+    }
+
+    if (!phone) {
+      toast.error('This guest has no phone number to send the receipt to.');
+      return;
+    }
+
+    const receiptNo = `RCP-${String(selectedReservationId).padStart(4, '0')}`;
+    const toastId = toast.loading('Capturing receipt image...');
+    const result = await sendReceiptViaWhatsApp(receiptModalData, receiptNo, phone);
+
+    if (result.success) {
+      toast.success('✅ Receipt image downloaded! WhatsApp is opening to the customer’s chat.', { id: toastId, duration: 7000 });
+    } else {
+      toast.error('Failed to send receipt: ' + (result.error || 'Unknown error'), { id: toastId });
+    }
+  };
+
+  const handleRowDownloadReceipt = async (res: Reservation) => {
+    const receiptData: ReceiptData = {
+      guestName: res.guest_name,
+      guestPhone: res.guest_phone,
+      guestEmail: res.guest_email,
+      roomType: res.room_type,
+      numRooms: res.num_rooms,
+      rooms: Array.isArray(res.room_details) ? res.room_details : [],
+      specialRequirements: res.special_requirements,
+      specialRequirementsAmount: Number(res.special_requirements_amount || 0),
+      earlyCheckinAmount: Number(res.early_checkin_amount || 0),
+      lateCheckoutAmount: Number(res.late_checkout_amount || 0),
+      stayCosyAmount: Number(res.stay_cosy_amount || 0),
+      checkIn: res.check_in,
+      checkOut: res.check_out,
+      adults: res.adults,
+      children: res.children,
+      totalTariff: Number(res.total_tariff),
+      advance: Number(res.advance || 0),
+      balanceDue: Math.max(0, Number(res.total_tariff) - Number(res.advance || 0)),
+      checkInTime: res.check_in_time || '12:00 Noon',
+      checkOutTime: res.check_out_time || '11:00 A.M',
+      created_at: res.created_at,
+      location: res.location || 'Ooty',
+    };
+
+    const toastId = toast.loading('Preparing receipt download...');
+    try {
+      const blob = await captureReceiptAsBlob(receiptData);
+      if (!blob) {
+        toast.error('Failed to generate receipt image.', { id: toastId });
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = `RCP-${String(res.id).padStart(4, '0')}-DrizzleDrop-Receipt.png`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 8000);
+      toast.success('✅ Receipt downloaded successfully.', { id: toastId, duration: 4000 });
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to download receipt.', { id: toastId });
+    }
+  };
+
+  const handleRowWhatsAppReceipt = async (res: Reservation) => {
+    const receiptData: ReceiptData = {
+      guestName: res.guest_name,
+      guestPhone: res.guest_phone,
+      guestEmail: res.guest_email,
+      roomType: res.room_type,
+      numRooms: res.num_rooms,
+      rooms: Array.isArray(res.room_details) ? res.room_details : [],
+      specialRequirements: res.special_requirements,
+      specialRequirementsAmount: Number(res.special_requirements_amount || 0),
+      earlyCheckinAmount: Number(res.early_checkin_amount || 0),
+      lateCheckoutAmount: Number(res.late_checkout_amount || 0),
+      stayCosyAmount: Number(res.stay_cosy_amount || 0),
+      checkIn: res.check_in,
+      checkOut: res.check_out,
+      adults: res.adults,
+      children: res.children,
+      totalTariff: Number(res.total_tariff),
+      advance: Number(res.advance || 0),
+      balanceDue: Math.max(0, Number(res.total_tariff) - Number(res.advance || 0)),
+      checkInTime: res.check_in_time || '12:00 Noon',
+      checkOutTime: res.check_out_time || '11:00 A.M',
+      created_at: res.created_at,
+      location: res.location || 'Ooty',
+    };
+
+    let phone = (res.guest_phone || '').replace(/[\s\-\(\)]/g, '');
+    if (phone.startsWith('+')) {
+      phone = phone.slice(1);
+    } else if (phone.length === 10) {
+      phone = '91' + phone;
+    }
+
+    if (!phone) {
+      toast.error('This guest has no phone number to send the receipt to.');
+      return;
+    }
+
+    const receiptNo = `RCP-${String(res.id).padStart(4, '0')}`;
+    const toastId = toast.loading('Capturing receipt image...');
+    const result = await sendReceiptViaWhatsApp(receiptData, receiptNo, phone);
+
+    if (result.success) {
+      toast.success('✅ Receipt image downloaded! WhatsApp is opening to the customer’s chat.', { id: toastId, duration: 7000 });
+    } else {
+      toast.error('Failed to send receipt: ' + (result.error || 'Unknown error'), { id: toastId });
+    }
   };
 
   return (
@@ -208,8 +356,8 @@ const Reservations: React.FC = () => {
             onClick={() => navigate('/create-reservation')}
             className="flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
           >
-            <Plus className="w-5 h-5" />
-            Create Reservation
+            <Plus className="w-5 h-5 text-elegant-gold" />
+            Quotation for Enquiry
           </button>
         </div>
       </header>
@@ -277,16 +425,23 @@ const Reservations: React.FC = () => {
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-primary/5 flex items-center justify-center text-primary text-xs font-black">
-                          {res.guest_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          {(res.guest_name || 'Guest').split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2)}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-primary">{res.guest_name}</p>
-                          <p className="text-[10px] text-soft-slate">{res.guest_phone}</p>
+                          <p className="text-sm font-bold text-primary">{res.guest_name || 'Guest'}</p>
+                          <p className="text-[10px] text-soft-slate">{res.guest_phone || '--'}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                      <p className="text-sm font-bold text-primary">{res.room_type}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-primary">{res.room_type}</p>
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${
+                          res.location === 'Chennai' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' : 'bg-blue-500/10 text-blue-600 border border-blue-500/20'
+                        }`}>
+                          {res.location || 'Ooty'}
+                        </span>
+                      </div>
                       <p className="text-[10px] text-soft-slate">{res.num_rooms} room(s)</p>
                     </td>
                     <td className="px-6 py-5">
@@ -326,7 +481,16 @@ const Reservations: React.FC = () => {
                       </select>
                     </td>
                     <td className="px-6 py-5 text-right">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {['Pending', 'Hold'].includes(res.status) && (
+                          <button
+                            onClick={() => acceptToReservation(res.id)}
+                            className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-all flex items-center gap-1 shadow-sm"
+                            title="Accept & Add to Reservation Database"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5 text-white" /> + Add to Reservation
+                          </button>
+                        )}
                         <button
                           onClick={() => viewReceipt(res)}
                           title="Generate Receipt"
@@ -335,18 +499,32 @@ const Reservations: React.FC = () => {
                           <FileText className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => sendInvoice(res.id)}
-                          title="Send Invoice Email"
+                          onClick={() => sendReceipt(res.id)}
+                          title="Send Receipt Email"
                           className="p-2 text-soft-slate hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                         >
                           <Mail className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => updateStatus(res.id, 'Active')}
-                          title="Mark Active"
+                          onClick={() => handleRowWhatsAppReceipt(res)}
+                          title="Send Receipt via WhatsApp"
+                          className="p-2 text-soft-slate hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleRowDownloadReceipt(res)}
+                          title="Download Receipt"
                           className="p-2 text-soft-slate hover:text-elegant-gold hover:bg-background rounded-lg transition-colors"
                         >
-                          <CheckCircle className="w-4 h-4" />
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => navigate(`/edit-reservation/${res.id}`)}
+                          title="Edit Reservation"
+                          className="p-2 text-soft-slate hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => deleteReservation(res.id)}
@@ -383,12 +561,20 @@ const Reservations: React.FC = () => {
                   </button>
                 )}
                 <button
-                  onClick={handleDownloadPDF}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
-                  title="Print / PDF"
+                  onClick={handleDownloadReceipt}
+                  className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 border border-amber-100 rounded-xl hover:bg-amber-100 transition-colors shadow-sm"
+                  title="Download Receipt"
                 >
-                  <Printer className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-bold text-primary">Print PDF</span>
+                  <Download className="w-4 h-4" />
+                  <span className="text-sm font-bold">Download</span>
+                </button>
+                <button
+                  onClick={handleWhatsAppReceipt}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl hover:bg-emerald-100 transition-colors shadow-sm"
+                  title="Send Receipt via WhatsApp"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span className="text-sm font-bold">WhatsApp</span>
                 </button>
                 <button
                   onClick={() => setReceiptModalData(null)}

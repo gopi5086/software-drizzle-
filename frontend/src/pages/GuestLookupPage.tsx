@@ -46,7 +46,7 @@ const GuestLookupPage: React.FC = () => {
     } catch (err: any) {
       if (err.response?.status === 404) {
         setNotFound(true);
-        toast.info('No guest found with this number. You can create a new booking.');
+        toast.info('No guest found with this number. You can create a quotation for enquiry.');
       } else {
         toast.error('Error searching guest. Check your connection.');
       }
@@ -194,7 +194,7 @@ const GuestLookupPage: React.FC = () => {
               className="w-full flex items-center justify-center gap-3 py-4 font-black text-base rounded-2xl shadow-lg transition-transform hover:scale-[1.02]"
               style={{ background: '#D4AF37', color: '#1a1a2e' }}
             >
-              Proceed to Create Booking
+              Proceed to Quotation for Enquiry
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
