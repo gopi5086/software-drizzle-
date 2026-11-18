@@ -4,30 +4,37 @@ require('dotenv').config();
 // --- Debug: confirm the env vars actually reached this process ---
 // (Never log the password.)
 console.log('🔎 DB Config Loaded:', {
-  host: process.env.DB_HOST,
+  host: process.env.DB_HOST || (process.env.DATABASE_URL ? '[From DATABASE_URL]' : undefined),
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
   database: process.env.DB_NAME,
-  hasPassword: Boolean(process.env.DB_PASSWORD)
+  hasPassword: Boolean(process.env.DB_PASSWORD || process.env.DATABASE_URL)
 });
 
-if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_NAME) {
+if (!process.env.DATABASE_URL && (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_NAME)) {
   console.error(
-    '❌ Missing required DB env vars. Check that DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME are set on the deployment platform (not just in your local .env file).'
+    '❌ Missing required DB env vars. Check that DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME (or DATABASE_URL) are set on the deployment platform.'
   );
 }
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST?.trim(),
-  user: process.env.DB_USER?.trim(),
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME?.trim(),
-  port: Number(process.env.DB_PORT) || 3306,
-  ssl: { rejectUnauthorized: false },
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+const isLocalHost = !process.env.DB_HOST || process.env.DB_HOST === 'localhost' || process.env.DB_HOST === '127.0.0.1';
+const sslOption = process.env.DB_SSL === 'false' 
+  ? false 
+  : (process.env.DB_SSL === 'true' || !isLocalHost ? { rejectUnauthorized: false } : false);
+
+const pool = process.env.DATABASE_URL || process.env.MYSQL_URL
+  ? mysql.createPool(process.env.DATABASE_URL || process.env.MYSQL_URL)
+  : mysql.createPool({
+      host: process.env.DB_HOST?.trim(),
+      user: process.env.DB_USER?.trim(),
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME?.trim(),
+      port: Number(process.env.DB_PORT) || 3306,
+      ssl: sslOption,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    });
 
 // Surface pool-level connection errors (e.g. dropped connections) instead of
 // letting them crash the process silently.
@@ -206,16 +213,16 @@ const initDB = async () => {
       // Handle potential errors
     }
 
-    // Seed default admin account if no users exist
+    // Seed default admin account if admin doesn't exist yet
     const bcrypt = require('bcryptjs');
-    const [userRows] = await connection.query('SELECT id FROM users LIMIT 1');
-    if (userRows.length === 0) {
+    const [adminRows] = await connection.query('SELECT id FROM users WHERE email = ?', ['admin12@gmail.com']);
+    if (adminRows.length === 0) {
       const hashedPassword = await bcrypt.hash('admin@123', 10);
       await connection.query(
         'INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)',
         ['Admin', 'admin12@gmail.com', hashedPassword, 'admin']
       );
-      console.log('✅ Default admin account created: admin12@gmail.com');
+      console.log('✅ Default admin account created: admin12@gmail.com / admin@123');
     }
 
     connection.release();

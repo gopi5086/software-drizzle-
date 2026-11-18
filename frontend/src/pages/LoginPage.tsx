@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, Mail, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import api from '../api/axios';
@@ -8,19 +8,46 @@ import api from '../api/axios';
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [slowServerHint, setSlowServerHint] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setSlowServerHint(false);
+
+    // If request takes longer than 3.5s (e.g. Render spin-up), inform the user
+    const timer = setTimeout(() => {
+      setSlowServerHint(true);
+    }, 3500);
 
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await api.post('/auth/login', { email: email.trim(), password });
+      clearTimeout(timer);
+      setSlowServerHint(false);
       login(res.data.token, res.data.user);
       toast.success(`Welcome back, ${res.data.user.full_name}!`);
       navigate('/dashboard');
-    } catch (err) {
-      toast.error('Invalid credentials or server error');
+    } catch (err: any) {
+      clearTimeout(timer);
+      setSlowServerHint(false);
+      
+      const serverMessage = err.response?.data?.message;
+      let errorMsg = 'Invalid credentials or server error';
+
+      if (serverMessage) {
+        errorMsg = serverMessage;
+      } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        errorMsg = 'Server response timed out. Render backend may still be waking up. Please try again.';
+      } else if (err.message === 'Network Error' || !err.response) {
+        errorMsg = 'Cannot reach backend server. Please verify Render backend is active and VITE_API_URL is configured on Vercel.';
+      }
+
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,15 +96,37 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
 
+            {slowServerHint && (
+              <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-300 text-xs animate-pulse">
+                <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+                <span>Waking up cloud server (Render free tier may take ~30–50s)...</span>
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full bg-elegant-gold text-deep-charcoal font-bold py-5 rounded-2xl shadow-xl shadow-elegant-gold/20 hover:scale-[1.02] transition-transform active:scale-100 mt-4 text-lg"
+              disabled={loading}
+              className="w-full bg-elegant-gold text-deep-charcoal font-bold py-5 rounded-2xl shadow-xl shadow-elegant-gold/20 hover:scale-[1.02] transition-transform active:scale-100 mt-4 text-lg flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Sign In to Dashboard
+              {loading ? (
+                <>
+                  <Loader2 className="w-6 h-6 animate-spin text-deep-charcoal" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <span>Sign In to Dashboard</span>
+              )}
             </button>
           </form>
 
-          <p className="text-center text-white/30 text-xs mt-10">
+          <div className="mt-8 pt-6 border-t border-white/10 text-center">
+            <p className="text-white/40 text-[11px] mb-1 font-medium">Default Administrator Credentials:</p>
+            <p className="text-elegant-gold/90 text-xs font-mono font-bold">
+              admin12@gmail.com &bull; admin@123
+            </p>
+          </div>
+
+          <p className="text-center text-white/30 text-xs mt-6">
             Internal Access Only • Authorized Staff Only
           </p>
         </div>

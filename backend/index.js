@@ -20,9 +20,17 @@ app.use(morgan('dev'));
 // Database Initialization
 initDB();
 
-// Test Route
+// Test & Health Routes
 app.get('/', (req, res) => {
   res.send('Drizzle Drop Inn API v2 is running...');
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    message: 'Drizzle Drop Inn Backend is online',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Import Routes
