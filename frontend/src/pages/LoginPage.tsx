@@ -119,14 +119,7 @@ const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-white/10 text-center">
-            <p className="text-white/40 text-[11px] mb-1 font-medium">Default Administrator Credentials:</p>
-            <p className="text-elegant-gold/90 text-xs font-mono font-bold">
-              admin12@gmail.com &bull; admin@123
-            </p>
-          </div>
-
-          <p className="text-center text-white/30 text-xs mt-6">
+          <p className="text-center text-white/30 text-xs mt-10">
             Internal Access Only • Authorized Staff Only
           </p>
         </div>
