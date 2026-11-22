@@ -1,43 +1,116 @@
 const nodemailer = require('nodemailer');
+const path = require('path');
+
+// Ensure .env is loaded regardless of process cwd
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 require('dotenv').config();
 
-const getTransporter = () => {
+const getEmailCredentials = () => {
+  require('dotenv').config({ path: path.join(__dirname, '../.env') });
+  require('dotenv').config({ path: path.join(__dirname, '../../.env') });
   require('dotenv').config();
+
   const rawUser = (process.env.EMAIL_USER || '').trim();
   const emailUser = (rawUser.includes('@') ? rawUser : process.env.EMAIL_FROM) || 'drizzledropinnhotel@gmail.com';
   const emailPass = (process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, '') : '') || 'agcunbuibedbcvuz';
-  const isGmail = (process.env.EMAIL_HOST || '').includes('gmail') || emailUser.includes('@gmail.com');
+  const emailHost = (process.env.EMAIL_HOST || 'smtp.gmail.com').trim();
+  const emailPort = parseInt(process.env.EMAIL_PORT, 10) || 465;
 
-  return nodemailer.createTransport(
-    isGmail
-      ? {
-          host: 'smtp.gmail.com',
-          port: 465,
-          secure: true,
-          auth: {
-            user: emailUser,
-            pass: emailPass,
-          },
-        }
-      : {
-          host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-          port: parseInt(process.env.EMAIL_PORT, 10) || 587,
-          secure: parseInt(process.env.EMAIL_PORT, 10) === 465,
-          auth: {
-            user: emailUser,
-            pass: emailPass,
-          },
-        }
-  );
+  return { emailUser, emailPass, emailHost, emailPort };
+};
+
+// Primary: Port 465 (SSL) with forced IPv4 (CRITICAL for Hostinger/cloud hosts)
+const getPrimaryTransporter = () => {
+  const { emailUser, emailPass, emailHost, emailPort } = getEmailCredentials();
+  const port = emailPort || 465;
+  const isSecure = port === 465;
+
+  return nodemailer.createTransport({
+    host: emailHost,
+    port: port,
+    secure: isSecure,
+    auth: {
+      user: emailUser,
+      pass: emailPass,
+    },
+    family: 4, // CRITICAL FOR HOSTINGER: force IPv4 (avoids hanging on dead IPv6 routes)
+    tls: {
+      rejectUnauthorized: false,
+      minVersion: 'TLSv1.2',
+    },
+    connectionTimeout: 12000,
+    greetingTimeout: 8000,
+    socketTimeout: 15000,
+  });
+};
+
+// Fallback: Port 587 (STARTTLS) with forced IPv4 if 465 is blocked by Hostinger firewall
+const getFallbackTransporter = () => {
+  const { emailUser, emailPass, emailHost } = getEmailCredentials();
+
+  return nodemailer.createTransport({
+    host: emailHost,
+    port: 587,
+    secure: false, // STARTTLS
+    requireTLS: true,
+    auth: {
+      user: emailUser,
+      pass: emailPass,
+    },
+    family: 4, // CRITICAL FOR HOSTINGER: force IPv4
+    tls: {
+      rejectUnauthorized: false,
+      minVersion: 'TLSv1.2',
+    },
+    connectionTimeout: 12000,
+    greetingTimeout: 8000,
+    socketTimeout: 15000,
+  });
+};
+
+// Smart sender that tries Primary (port 465), and if blocked/failed, tries Fallback (port 587)
+const sendMailWithFallback = async (mailOptions) => {
+  let primaryError = null;
+  try {
+    const primary = getPrimaryTransporter();
+    const info = await primary.sendMail(mailOptions);
+    console.log(`✅ Email sent via primary SMTP (${info.messageId})`);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    primaryError = err;
+    console.warn(`⚠️ Primary SMTP send failed: ${err.message} (${err.code}). Trying fallback on port 587...`);
+  }
+
+  try {
+    const fallback = getFallbackTransporter();
+    const info = await fallback.sendMail(mailOptions);
+    console.log(`✅ Email sent via fallback port 587 (${info.messageId})`);
+    return { success: true, messageId: info.messageId };
+  } catch (fallbackErr) {
+    console.error(`❌ Fallback SMTP send also failed: ${fallbackErr.message} (${fallbackErr.code})`);
+    return {
+      success: false,
+      error: `Primary (465): ${primaryError?.message || 'failed'} | Fallback (587): ${fallbackErr.message}`,
+    };
+  }
 };
 
 // Initial verification
-const initialTransporter = getTransporter();
-initialTransporter.verify((error) => {
+const initialPrimary = getPrimaryTransporter();
+initialPrimary.verify((error) => {
   if (error) {
-    console.error('⚠️ Email transporter verification warning:', error.message);
+    console.warn('⚠️ Primary SMTP verify warning:', error.message, '- will use fallback on port 587 if needed');
+    const fallback = getFallbackTransporter();
+    fallback.verify((fErr) => {
+      if (fErr) {
+        console.error('⚠️ Fallback SMTP verify warning:', fErr.message);
+      } else {
+        console.log('✅ Fallback SMTP (port 587) is ready');
+      }
+    });
   } else {
-    console.log('✅ Email service is ready to send messages');
+    console.log('✅ Email service is ready to send messages via', getEmailCredentials().emailUser);
   }
 });
 
@@ -88,7 +161,7 @@ const safeParseRoomDetails = (val) => {
 };
 
 exports.sendInvoiceEmail = async (res) => {
-  if (!res || !res.guest_email) return null;
+  if (!res || !res.guest_email) return { success: false, error: 'Guest email address is missing' };
 
   try {
     const invoiceNo = `DDI-${String(res.id).padStart(4, '0')}`;
@@ -258,15 +331,14 @@ exports.sendInvoiceEmail = async (res) => {
 </html>
   `;
 
-    const transporter = getTransporter();
-    const info = await transporter.sendMail({
-      from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com'}>`,
+    const { emailUser } = getEmailCredentials();
+    const result = await sendMailWithFallback({
+      from: `"Drizzle Drop Inn" <${emailUser}>`,
       to: res.guest_email,
       subject: `Booking Confirmation & Invoice - ${invoiceNo}`,
       html: html,
     });
-    console.log('Invoice email sent:', info.messageId);
-    return { success: true, messageId: info.messageId };
+    return result;
   } catch (error) {
     console.error('Error sending invoice email:', error);
     return { success: false, error: error.message };
@@ -274,7 +346,7 @@ exports.sendInvoiceEmail = async (res) => {
 };
 
 exports.sendReceiptEmail = async (res) => {
-  if (!res || !res.guest_email) return null;
+  if (!res || !res.guest_email) return { success: false, error: 'Guest email address is missing' };
 
   try {
     const receiptNo = `REC-${String(res.id).padStart(4, '0')}`;
@@ -445,15 +517,14 @@ exports.sendReceiptEmail = async (res) => {
 </html>
   `;
 
-    const transporter = getTransporter();
-    const info = await transporter.sendMail({
-      from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com'}>`,
+    const { emailUser } = getEmailCredentials();
+    const result = await sendMailWithFallback({
+      from: `"Drizzle Drop Inn" <${emailUser}>`,
       to: res.guest_email,
       subject: `Reservation Receipt - ${receiptNo}`,
       html: html,
     });
-    console.log('Receipt email sent:', info.messageId);
-    return { success: true, messageId: info.messageId };
+    return result;
   } catch (error) {
     console.error('Error sending receipt email:', error);
     return { success: false, error: error.message };
@@ -462,7 +533,7 @@ exports.sendReceiptEmail = async (res) => {
 
 // ---- Enquiry Quotation Email ----
 exports.sendEnquiryEmail = async (enq) => {
-  if (!enq || !enq.guest_email) return null;
+  if (!enq || !enq.guest_email) return { success: false, error: 'Guest email address is missing' };
 
   try {
     const quoteNo = `QTE-${String(enq.id).padStart(4, '0')}`;
@@ -613,46 +684,50 @@ exports.sendEnquiryEmail = async (enq) => {
 </html>
   `;
 
-    const transporter = getTransporter();
-    const info = await transporter.sendMail({
-      from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com'}>`,
+    const { emailUser } = getEmailCredentials();
+    const result = await sendMailWithFallback({
+      from: `"Drizzle Drop Inn" <${emailUser}>`,
       to: enq.guest_email,
       subject: `Quotation & Invoice - ${quoteNo} | DrizzleDrop Inn`,
       html: html,
     });
-    console.log('Enquiry email sent:', info.messageId);
-    return { success: true, messageId: info.messageId };
+    return result;
   } catch (error) {
     console.error('Error sending enquiry email:', error);
     return { success: false, error: error.message };
   }
 };
 
-exports.verifySMTP = () => {
-  return new Promise((resolve) => {
-    getTransporter().verify((error) => {
-      if (error) {
-        resolve({ success: false, error: error.message, code: error.code });
-      } else {
-        resolve({ success: true, message: `SMTP verified successfully` });
-      }
-    });
-  });
+exports.verifySMTP = async () => {
+  const { emailUser } = getEmailCredentials();
+  try {
+    const primary = getPrimaryTransporter();
+    await primary.verify();
+    return { success: true, message: `SMTP verified successfully on primary port 465 for ${emailUser}` };
+  } catch (pErr) {
+    console.warn(`Primary SMTP verify failed: ${pErr.message}. Checking fallback port 587...`);
+    try {
+      const fallback = getFallbackTransporter();
+      await fallback.verify();
+      return { success: true, message: `SMTP verified successfully on fallback port 587 for ${emailUser}` };
+    } catch (fErr) {
+      return {
+        success: false,
+        error: `Port 465: ${pErr.message} | Port 587: ${fErr.message}`,
+        code: pErr.code || fErr.code,
+      };
+    }
+  }
 };
 
 exports.sendTestEmail = async (to) => {
-  try {
-    const rawUser = (process.env.EMAIL_USER || '').trim();
-    const emailUser = (rawUser.includes('@') ? rawUser : process.env.EMAIL_FROM) || 'drizzledropinnhotel@gmail.com';
-    const info = await getTransporter().sendMail({
-      from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || emailUser}>`,
-      to: to || emailUser,
-      subject: 'Drizzle Drop Inn - SMTP Test Email',
-      text: 'This is a test email confirming that SMTP is working properly from Drizzle Drop Inn system.',
-    });
-    return { success: true, messageId: info.messageId };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
+  const { emailUser } = getEmailCredentials();
+  const recipient = to || emailUser;
+  return await sendMailWithFallback({
+    from: `"Drizzle Drop Inn" <${emailUser}>`,
+    to: recipient,
+    subject: 'Drizzle Drop Inn - SMTP Test Email',
+    text: `This is a test email confirming that SMTP is working properly from Drizzle Drop Inn system.\nSent at: ${new Date().toISOString()}`,
+  });
 };
 
