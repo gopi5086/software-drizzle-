@@ -21,6 +21,10 @@ const api = axios.create({
   timeout: 45000, // 45 seconds to accommodate Render free-tier cold starts
 });
 
+if (typeof window !== 'undefined') {
+  console.log('🌐 Connected API URL:', api.defaults.baseURL);
+}
+
 // Add a request interceptor to include auth token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
