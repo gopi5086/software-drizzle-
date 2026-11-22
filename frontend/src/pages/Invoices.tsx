@@ -10,7 +10,8 @@ import {
   AlertCircle,
   FileText,
   Loader2,
-  MessageCircle
+  MessageCircle,
+  Mail
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Modal from '../components/Modal';
@@ -222,6 +223,24 @@ const Invoices: React.FC = () => {
     }
   };
 
+  const handleEmailInvoice = async (inv: Invoice) => {
+    const resId = inv.reservationId || parseInt(inv.id.replace(/\D/g, ''), 10);
+    if (!resId) {
+      toast.error('Invalid reservation ID for this invoice');
+      return;
+    }
+    try {
+      const promise = api.post(`/reservations/${resId}/send-invoice`);
+      toast.promise(promise, {
+        loading: `Sending invoice email to ${inv.client}...`,
+        success: `Invoice sent to guest email successfully!`,
+        error: (err: any) => err.response?.data?.message || 'Failed to send invoice email'
+      });
+    } catch (err: any) {
+      toast.error('Error initiating invoice email');
+    }
+  };
+
   const handleSummaryPDF = () => {
     exportToPDF(
       'Monthly Billing Summary - Drizzle Drop Inn',
@@ -385,6 +404,13 @@ const Invoices: React.FC = () => {
                            title="Print"
                          >
                            <Printer className="w-4 h-4" />
+                         </button>
+                         <button
+                           onClick={() => handleEmailInvoice(inv)}
+                           className="p-2 text-soft-slate hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                           title="Email Invoice to Guest"
+                         >
+                           <Mail className="w-4 h-4 text-blue-600" />
                          </button>
                          <button
                            onClick={() => handleExportInvoicePDF(inv)}

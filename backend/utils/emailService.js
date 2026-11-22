@@ -5,7 +5,7 @@ const getTransporter = () => {
   require('dotenv').config();
   const rawUser = (process.env.EMAIL_USER || '').trim();
   const emailUser = (rawUser.includes('@') ? rawUser : process.env.EMAIL_FROM) || 'drizzledropinnhotel@gmail.com';
-  const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
+  const emailPass = (process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, '') : '') || 'agcunbuibedbcvuz';
   const isGmail = (process.env.EMAIL_HOST || '').includes('gmail') || emailUser.includes('@gmail.com');
 
   return nodemailer.createTransport(

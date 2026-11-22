@@ -131,9 +131,22 @@ const Reservations: React.FC = () => {
     try {
       const promise = api.post(`/reservations/${id}/send-receipt`);
       toast.promise(promise, {
-        loading: 'Sending receipt email...',
-        success: 'Receipt sent successfully!',
+        loading: 'Sending receipt email to guest...',
+        success: 'Receipt sent to guest successfully!',
         error: (err: any) => err.response?.data?.message || 'Failed to send receipt email'
+      });
+    } catch (err: any) {
+      toast.error('Error initiating email process');
+    }
+  };
+
+  const sendInvoice = async (id: number) => {
+    try {
+      const promise = api.post(`/reservations/${id}/send-invoice`);
+      toast.promise(promise, {
+        loading: 'Sending booking invoice to guest...',
+        success: 'Invoice sent to guest successfully!',
+        error: (err: any) => err.response?.data?.message || 'Failed to send invoice email'
       });
     } catch (err: any) {
       toast.error('Error initiating email process');
@@ -501,11 +514,18 @@ const Reservations: React.FC = () => {
                           <FileText className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={() => sendInvoice(res.id)}
+                          title="Email Invoice & Confirmation to Guest"
+                          className="p-2 text-soft-slate hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        >
+                          <FileText className="w-4 h-4 text-indigo-600" />
+                        </button>
+                        <button
                           onClick={() => sendReceipt(res.id)}
-                          title="Send Receipt Email"
+                          title="Email Payment Receipt to Guest"
                           className="p-2 text-soft-slate hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                         >
-                          <Mail className="w-4 h-4" />
+                          <Mail className="w-4 h-4 text-blue-600" />
                         </button>
                         <button
                           onClick={() => handleRowWhatsAppReceipt(res)}
@@ -553,14 +573,24 @@ const Reservations: React.FC = () => {
               <h3 className="text-xl font-black text-primary">Receipt Preview</h3>
               <div className="flex items-center gap-3">
                 {selectedReservationId && (
-                  <button
-                    onClick={() => sendReceipt(selectedReservationId)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl hover:bg-blue-100 transition-colors shadow-sm"
-                    title="Email Receipt"
-                  >
-                    <Mail className="w-4 h-4" />
-                    <span className="text-sm font-bold">Email</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => sendInvoice(selectedReservationId)}
+                      className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors shadow-sm"
+                      title="Email Invoice to Guest"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span className="text-sm font-bold">Email Invoice</span>
+                    </button>
+                    <button
+                      onClick={() => sendReceipt(selectedReservationId)}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl hover:bg-blue-100 transition-colors shadow-sm"
+                      title="Email Receipt to Guest"
+                    >
+                      <Mail className="w-4 h-4" />
+                      <span className="text-sm font-bold">Email Receipt</span>
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={handleDownloadReceipt}
