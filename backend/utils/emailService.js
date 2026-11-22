@@ -1,39 +1,43 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-const rawUser = (process.env.EMAIL_USER || '').trim();
-const emailUser = (rawUser.includes('@') ? rawUser : process.env.EMAIL_FROM) || 'drizzledropinnhotel@gmail.com';
-const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
-const isGmail = (process.env.EMAIL_HOST || '').includes('gmail') || emailUser.includes('@gmail.com');
+const getTransporter = () => {
+  require('dotenv').config();
+  const rawUser = (process.env.EMAIL_USER || '').trim();
+  const emailUser = (rawUser.includes('@') ? rawUser : process.env.EMAIL_FROM) || 'drizzledropinnhotel@gmail.com';
+  const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
+  const isGmail = (process.env.EMAIL_HOST || '').includes('gmail') || emailUser.includes('@gmail.com');
 
-const transporter = nodemailer.createTransport(
-  isGmail
-    ? {
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-          user: emailUser,
-          pass: emailPass,
-        },
-      }
-    : {
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.EMAIL_PORT, 10) || 587,
-        secure: parseInt(process.env.EMAIL_PORT, 10) === 465,
-        auth: {
-          user: emailUser,
-          pass: emailPass,
-        },
-      }
-);
+  return nodemailer.createTransport(
+    isGmail
+      ? {
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user: emailUser,
+            pass: emailPass,
+          },
+        }
+      : {
+          host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+          port: parseInt(process.env.EMAIL_PORT, 10) || 587,
+          secure: parseInt(process.env.EMAIL_PORT, 10) === 465,
+          auth: {
+            user: emailUser,
+            pass: emailPass,
+          },
+        }
+  );
+};
 
-// Verify connection configuration
-transporter.verify((error) => {
+// Initial verification
+const initialTransporter = getTransporter();
+initialTransporter.verify((error) => {
   if (error) {
     console.error('⚠️ Email transporter verification warning:', error.message);
   } else {
-    console.log('✅ Email service is ready to send messages via', emailUser);
+    console.log('✅ Email service is ready to send messages');
   }
 });
 
@@ -254,17 +258,18 @@ exports.sendInvoiceEmail = async (res) => {
 </html>
   `;
 
-  const info = await transporter.sendMail({
+    const transporter = getTransporter();
+    const info = await transporter.sendMail({
       from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com'}>`,
       to: res.guest_email,
       subject: `Booking Confirmation & Invoice - ${invoiceNo}`,
       html: html,
     });
     console.log('Invoice email sent:', info.messageId);
-    return info;
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending invoice email:', error);
-    return null;
+    return { success: false, error: error.message };
   }
 };
 
@@ -440,17 +445,18 @@ exports.sendReceiptEmail = async (res) => {
 </html>
   `;
 
-  const info = await transporter.sendMail({
+    const transporter = getTransporter();
+    const info = await transporter.sendMail({
       from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com'}>`,
       to: res.guest_email,
       subject: `Reservation Receipt - ${receiptNo}`,
       html: html,
     });
     console.log('Receipt email sent:', info.messageId);
-    return info;
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending receipt email:', error);
-    return null;
+    return { success: false, error: error.message };
   }
 };
 
@@ -607,27 +613,28 @@ exports.sendEnquiryEmail = async (enq) => {
 </html>
   `;
 
-  const info = await transporter.sendMail({
+    const transporter = getTransporter();
+    const info = await transporter.sendMail({
       from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com'}>`,
       to: enq.guest_email,
       subject: `Quotation & Invoice - ${quoteNo} | DrizzleDrop Inn`,
       html: html,
     });
     console.log('Enquiry email sent:', info.messageId);
-    return info;
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending enquiry email:', error);
-    return null;
+    return { success: false, error: error.message };
   }
 };
 
 exports.verifySMTP = () => {
   return new Promise((resolve) => {
-    transporter.verify((error, success) => {
+    getTransporter().verify((error) => {
       if (error) {
         resolve({ success: false, error: error.message, code: error.code });
       } else {
-        resolve({ success: true, message: `SMTP verified successfully for ${emailUser}` });
+        resolve({ success: true, message: `SMTP verified successfully` });
       }
     });
   });
@@ -635,7 +642,9 @@ exports.verifySMTP = () => {
 
 exports.sendTestEmail = async (to) => {
   try {
-    const info = await transporter.sendMail({
+    const rawUser = (process.env.EMAIL_USER || '').trim();
+    const emailUser = (rawUser.includes('@') ? rawUser : process.env.EMAIL_FROM) || 'drizzledropinnhotel@gmail.com';
+    const info = await getTransporter().sendMail({
       from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || emailUser}>`,
       to: to || emailUser,
       subject: 'Drizzle Drop Inn - SMTP Test Email',

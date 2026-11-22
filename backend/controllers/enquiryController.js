@@ -312,11 +312,11 @@ exports.sendEnquiryEmail = async (req, res) => {
       return res.status(400).json({ message: 'Guest has no email address on this enquiry' });
     }
 
-    const info = await emailService.sendEnquiryEmail(enquiry);
-    if (info) {
-      res.json({ message: 'Quotation invoice email sent to ' + enquiry.guest_email });
+    const result = await emailService.sendEnquiryEmail(enquiry);
+    if (result && result.messageId) {
+      res.json({ message: 'Quotation invoice email sent to ' + enquiry.guest_email, messageId: result.messageId });
     } else {
-      res.status(500).json({ message: 'Failed to send email. Check SMTP configuration.' });
+      res.status(500).json({ message: result?.error || 'Failed to send email. Check SMTP configuration.' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });

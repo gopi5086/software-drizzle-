@@ -215,11 +215,11 @@ exports.sendManualInvoice = async (req, res) => {
       return res.status(400).json({ message: 'Guest has no email address' });
     }
 
-    const info = await emailService.sendInvoiceEmail(reservation);
-    if (info) {
-      res.json({ message: 'Invoice email sent successfully' });
+    const result = await emailService.sendInvoiceEmail(reservation);
+    if (result && result.messageId) {
+      res.json({ message: 'Invoice email sent successfully', messageId: result.messageId });
     } else {
-      res.status(500).json({ message: 'Failed to send email' });
+      res.status(500).json({ message: result?.error || 'Failed to send invoice email' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -237,11 +237,11 @@ exports.sendManualReceipt = async (req, res) => {
       return res.status(400).json({ message: 'Guest has no email address' });
     }
 
-    const info = await emailService.sendReceiptEmail(reservation);
-    if (info) {
-      res.json({ message: 'Receipt email sent successfully' });
+    const result = await emailService.sendReceiptEmail(reservation);
+    if (result && result.messageId) {
+      res.json({ message: 'Receipt email sent successfully', messageId: result.messageId });
     } else {
-      res.status(500).json({ message: 'Failed to send receipt email' });
+      res.status(500).json({ message: result?.error || 'Failed to send receipt email' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
