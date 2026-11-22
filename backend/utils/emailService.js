@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 
-const emailUser = process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com';
+const rawUser = process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com';
+const emailUser = rawUser.includes('@') ? rawUser : (process.env.EMAIL_FROM || 'drizzledropinnhotel@gmail.com');
 const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
 const isGmail = (process.env.EMAIL_HOST || '').includes('gmail') || emailUser.includes('@gmail.com');
 
