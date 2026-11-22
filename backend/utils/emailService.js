@@ -62,50 +62,75 @@ const formatDate = (date) => {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }).replace(/ /g, '-');
 };
 
-exports.sendInvoiceEmail = async (res) => {
-  if (!res.guest_email) return;
-
-  const invoiceNo = `DDI-${String(res.id).padStart(4, '0')}`;
-  const checkInDate = parseDate(res.check_in);
-  const checkOutDate = parseDate(res.check_out);
-  const nights = (checkInDate && checkOutDate)
-    ? Math.max(1, Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)))
-    : 1;
-
-  const balanceDue = (res.total_tariff || 0) - (res.advance || 0);
-  
-  // UPI QR Code
-  const upiUrl = `upi://pay?pa=9962822355@okbizaxis&pn=DrizzleDrop%20Inn${balanceDue > 0 ? `&am=${balanceDue}` : ''}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiUrl)}`;
-
-  // Table rows for dynamic content
-  let roomsHtml = '';
-  const details = typeof res.room_details === 'string' ? JSON.parse(res.room_details) : (res.room_details || []);
-  
-  const addRow = (label, value, shade) => `
-    <div style="display: flex; justify-content: space-between; padding: 6px 10px; background: ${shade ? '#e8eff7' : '#ffffff'}; border-bottom: 1px solid #d1dce6;">
-      <span style="font-weight: bold; color: #1e3a5f;">${label}</span>
-      <span style="font-weight: bold; color: #000;">${value}</span>
-    </div>
-  `;
-
-  let rows = '';
-  rows += addRow('Check-In Date:', formatDate(checkInDate), true);
-  rows += addRow('Check-Out Date:', formatDate(checkOutDate), false);
-  rows += addRow('Total Number of Guests (Adults)', res.adults, true);
-  rows += addRow('Total Number of Guests (Kids < 10y)', res.children, false);
-  rows += addRow('No. of Rooms', res.num_rooms, true);
-
-  let currentShade = false;
-  if (details.length > 0) {
-    details.forEach(room => {
-      rows += addRow(`${room.type} (Per Room/Night)`, `${room.count} x ₹${room.rate}`, currentShade);
-      currentShade = !currentShade;
-    });
-  } else {
-    rows += addRow(`${res.room_type} (Per Room/Night)`, `${res.num_rooms} x ₹${res.total_tariff / nights / res.num_rooms}`, currentShade);
-    currentShade = !currentShade;
+const safeParseRoomDetails = (val) => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'object') return [val];
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && typeof parsed === 'object') return [parsed];
+      } catch (e) {
+        // Fall back below
+      }
+    }
+    return [{ type: trimmed, count: 1, rate: 0 }];
   }
+  return [];
+};
+
+exports.sendInvoiceEmail = async (res) => {
+  if (!res || !res.guest_email) return null;
+
+  try {
+    const invoiceNo = `DDI-${String(res.id).padStart(4, '0')}`;
+    const checkInDate = parseDate(res.check_in);
+    const checkOutDate = parseDate(res.check_out);
+    const nights = (checkInDate && checkOutDate)
+      ? Math.max(1, Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)))
+      : 1;
+
+    const balanceDue = (res.total_tariff || 0) - (res.advance || 0);
+    
+    // UPI QR Code
+    const upiUrl = `upi://pay?pa=9962822355@okbizaxis&pn=DrizzleDrop%20Inn${balanceDue > 0 ? `&am=${balanceDue}` : ''}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiUrl)}`;
+
+    // Table rows for dynamic content
+    let roomsHtml = '';
+    const details = safeParseRoomDetails(res.room_details);
+    
+    const addRow = (label, value, shade) => `
+      <div style="display: flex; justify-content: space-between; padding: 6px 10px; background: ${shade ? '#e8eff7' : '#ffffff'}; border-bottom: 1px solid #d1dce6;">
+        <span style="font-weight: bold; color: #1e3a5f;">${label}</span>
+        <span style="font-weight: bold; color: #000;">${value}</span>
+      </div>
+    `;
+
+    let rows = '';
+    rows += addRow('Check-In Date:', formatDate(checkInDate), true);
+    rows += addRow('Check-Out Date:', formatDate(checkOutDate), false);
+    rows += addRow('Total Number of Guests (Adults)', res.adults || 1, true);
+    rows += addRow('Total Number of Guests (Kids < 10y)', res.children || 0, false);
+    rows += addRow('No. of Rooms', res.num_rooms || 1, true);
+
+    let currentShade = false;
+    if (details.length > 0) {
+      details.forEach(room => {
+        const roomType = room.type || res.room_type || 'Room';
+        const roomRate = room.rate || (nights && res.num_rooms ? Math.round(res.total_tariff / nights / res.num_rooms) : (res.total_tariff || 0));
+        rows += addRow(`${roomType} (Per Room/Night)`, `${room.count || 1} x ₹${roomRate}`, currentShade);
+        currentShade = !currentShade;
+      });
+    } else {
+      const perRoomPerNight = nights > 0 && (res.num_rooms || 1) > 0 ? Math.round((res.total_tariff || 0) / nights / (res.num_rooms || 1)) : (res.total_tariff || 0);
+      rows += addRow(`${res.room_type || 'Room'} (Per Room/Night)`, `${res.num_rooms || 1} x ₹${perRoomPerNight}`, currentShade);
+      currentShade = !currentShade;
+    }
 
   if (res.early_checkin_amount > 0) {
     rows += addRow('Early Check-in Charges', `₹${res.early_checkin_amount}`, currentShade);
@@ -229,8 +254,7 @@ exports.sendInvoiceEmail = async (res) => {
 </html>
   `;
 
-  try {
-    const info = await transporter.sendMail({
+  const info = await transporter.sendMail({
       from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com'}>`,
       to: res.guest_email,
       subject: `Booking Confirmation & Invoice - ${invoiceNo}`,
@@ -245,14 +269,15 @@ exports.sendInvoiceEmail = async (res) => {
 };
 
 exports.sendReceiptEmail = async (res) => {
-  if (!res.guest_email) return;
+  if (!res || !res.guest_email) return null;
 
-  const receiptNo = `REC-${String(res.id).padStart(4, '0')}`;
-  const checkInDate = parseDate(res.check_in);
-  const checkOutDate = parseDate(res.check_out);
+  try {
+    const receiptNo = `REC-${String(res.id).padStart(4, '0')}`;
+    const checkInDate = parseDate(res.check_in);
+    const checkOutDate = parseDate(res.check_out);
 
-  const balanceDue = (res.total_tariff || 0) - (res.advance || 0);
-  const details = typeof res.room_details === 'string' ? JSON.parse(res.room_details) : (res.room_details || []);
+    const balanceDue = (res.total_tariff || 0) - (res.advance || 0);
+    const details = safeParseRoomDetails(res.room_details);
 
   let roomsHtml = '';
   if (details.length > 0) {
@@ -415,8 +440,7 @@ exports.sendReceiptEmail = async (res) => {
 </html>
   `;
 
-  try {
-    const info = await transporter.sendMail({
+  const info = await transporter.sendMail({
       from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com'}>`,
       to: res.guest_email,
       subject: `Reservation Receipt - ${receiptNo}`,
@@ -432,35 +456,36 @@ exports.sendReceiptEmail = async (res) => {
 
 // ---- Enquiry Quotation Email ----
 exports.sendEnquiryEmail = async (enq) => {
-  if (!enq.guest_email) return null;
+  if (!enq || !enq.guest_email) return null;
 
-  const quoteNo = `QTE-${String(enq.id).padStart(4, '0')}`;
-  const checkInDate = parseDate(enq.check_in);
-  const checkOutDate = parseDate(enq.check_out);
-  const nights = (checkInDate && checkOutDate)
-    ? Math.max(1, Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)))
-    : 1;
+  try {
+    const quoteNo = `QTE-${String(enq.id).padStart(4, '0')}`;
+    const checkInDate = parseDate(enq.check_in);
+    const checkOutDate = parseDate(enq.check_out);
+    const nights = (checkInDate && checkOutDate)
+      ? Math.max(1, Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)))
+      : 1;
 
-  const balanceDue = (enq.total_tariff || 0) - (enq.advance || 0);
-  const upiUrl = `upi://pay?pa=9962822355@okbizaxis&pn=DrizzleDrop%20Inn${balanceDue > 0 ? `&am=${balanceDue}` : ''}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiUrl)}`;
+    const balanceDue = (enq.total_tariff || 0) - (enq.advance || 0);
+    const upiUrl = `upi://pay?pa=9962822355@okbizaxis&pn=DrizzleDrop%20Inn${balanceDue > 0 ? `&am=${balanceDue}` : ''}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiUrl)}`;
 
-  const addRow = (label, value, shade) => `
-    <div style="display: flex; justify-content: space-between; padding: 6px 10px; background: ${shade ? '#e8eff7' : '#ffffff'}; border-bottom: 1px solid #d1dce6;">
-      <span style="font-weight: bold; color: #1e3a5f;">${label}</span>
-      <span style="font-weight: bold; color: #000;">${value}</span>
-    </div>
-  `;
+    const addRow = (label, value, shade) => `
+      <div style="display: flex; justify-content: space-between; padding: 6px 10px; background: ${shade ? '#e8eff7' : '#ffffff'}; border-bottom: 1px solid #d1dce6;">
+        <span style="font-weight: bold; color: #1e3a5f;">${label}</span>
+        <span style="font-weight: bold; color: #000;">${value}</span>
+      </div>
+    `;
 
-  let rows = '';
-  rows += addRow('Check-In Date:', formatDate(checkInDate), true);
-  rows += addRow('Check-Out Date:', formatDate(checkOutDate), false);
-  rows += addRow('Total Number of Guests (Adults)', enq.adults || 1, true);
-  rows += addRow('Total Number of Guests (Kids < 10y)', enq.children || 0, false);
-  rows += addRow('No. of Rooms', enq.num_rooms || 1, true);
+    let rows = '';
+    rows += addRow('Check-In Date:', formatDate(checkInDate), true);
+    rows += addRow('Check-Out Date:', formatDate(checkOutDate), false);
+    rows += addRow('Total Number of Guests (Adults)', enq.adults || 1, true);
+    rows += addRow('Total Number of Guests (Kids < 10y)', enq.children || 0, false);
+    rows += addRow('No. of Rooms', enq.num_rooms || 1, true);
 
-  let shade = false;
-  const details = typeof enq.room_details === 'string' ? (() => { try { return JSON.parse(enq.room_details); } catch { return []; } })() : (enq.room_details || []);
+    let shade = false;
+    const details = safeParseRoomDetails(enq.room_details);
   if (details.length > 0) {
     details.forEach(room => {
       rows += addRow(`${room.type} (Per Room/Night)`, `${room.count} x ₹${room.rate}`, shade);
@@ -582,8 +607,7 @@ exports.sendEnquiryEmail = async (enq) => {
 </html>
   `;
 
-  try {
-    const info = await transporter.sendMail({
+  const info = await transporter.sendMail({
       from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com'}>`,
       to: enq.guest_email,
       subject: `Quotation & Invoice - ${quoteNo} | DrizzleDrop Inn`,
