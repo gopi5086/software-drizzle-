@@ -63,9 +63,11 @@ const staticPath = possibleStaticPaths.find(p => fs.existsSync(p));
 
 if (staticPath) {
   app.use(express.static(staticPath));
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api')) return next();
-    res.sendFile(path.join(staticPath, 'index.html'));
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api')) {
+      return res.sendFile(path.join(staticPath, 'index.html'));
+    }
+    next();
   });
 } else {
   app.get('/', (req, res) => {
