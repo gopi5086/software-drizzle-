@@ -1,6 +1,12 @@
 import axios from 'axios';
 
-let rawURL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').trim();
+// Default to live Render backend in production if VITE_API_URL is not set
+const fallbackURL = import.meta.env.PROD
+  ? 'https://software-drizzle.onrender.com/api'
+  : 'http://localhost:5000/api';
+
+let rawURL = (import.meta.env.VITE_API_URL || fallbackURL).trim();
+
 // Normalize: if the user provided e.g. "https://xxx.onrender.com" without "/api", append it
 if (rawURL && !rawURL.endsWith('/api') && !rawURL.endsWith('/api/')) {
   rawURL = rawURL.replace(/\/+$/, '') + '/api';
