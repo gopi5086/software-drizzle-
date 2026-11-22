@@ -1,14 +1,17 @@
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-const rawUser = process.env.EMAIL_USER || 'drizzledropinnhotel@gmail.com';
-const emailUser = rawUser.includes('@') ? rawUser : (process.env.EMAIL_FROM || 'drizzledropinnhotel@gmail.com');
+const rawUser = (process.env.EMAIL_USER || '').trim();
+const emailUser = (rawUser.includes('@') ? rawUser : process.env.EMAIL_FROM) || 'drizzledropinnhotel@gmail.com';
 const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
 const isGmail = (process.env.EMAIL_HOST || '').includes('gmail') || emailUser.includes('@gmail.com');
 
 const transporter = nodemailer.createTransport(
   isGmail
     ? {
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: {
           user: emailUser,
           pass: emailPass,
@@ -591,6 +594,32 @@ exports.sendEnquiryEmail = async (enq) => {
   } catch (error) {
     console.error('Error sending enquiry email:', error);
     return null;
+  }
+};
+
+exports.verifySMTP = () => {
+  return new Promise((resolve) => {
+    transporter.verify((error, success) => {
+      if (error) {
+        resolve({ success: false, error: error.message, code: error.code });
+      } else {
+        resolve({ success: true, message: `SMTP verified successfully for ${emailUser}` });
+      }
+    });
+  });
+};
+
+exports.sendTestEmail = async (to) => {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Drizzle Drop Inn" <${process.env.EMAIL_FROM || emailUser}>`,
+      to: to || emailUser,
+      subject: 'Drizzle Drop Inn - SMTP Test Email',
+      text: 'This is a test email confirming that SMTP is working properly from Drizzle Drop Inn system.',
+    });
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 };
 

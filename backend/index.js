@@ -35,6 +35,16 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/api/test-smtp', async (req, res) => {
+  const emailService = require('./utils/emailService');
+  const result = await emailService.verifySMTP();
+  if (result.success && req.query.send === 'true') {
+    const sendResult = await emailService.sendTestEmail(req.query.to);
+    return res.json({ smtpVerification: result, sendResult });
+  }
+  res.status(result.success ? 200 : 500).json(result);
+});
+
 // Import API Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/reservations', require('./routes/reservationRoutes'));
