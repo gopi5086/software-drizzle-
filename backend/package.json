@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "build": "echo 'Backend ready'",
+    "build": "node -e \"const fs=require('fs'); if(!fs.existsSync('build')) fs.mkdirSync('build'); fs.writeFileSync('build/index.html', '<h1>Backend Ready</h1>'); console.log('Backend build ready');\"",
     "dev": "nodemon index.js",
     "seed": "node seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"

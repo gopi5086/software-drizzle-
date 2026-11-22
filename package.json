@@ -1,0 +1,12 @@
+{
+  "name": "drizzle-drop-inn",
+  "version": "1.0.0",
+  "description": "Drizzle Drop Inn Full Stack Management System",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --prefix backend",
+    "start": "npm start --prefix backend",
+    "backend": "npm start --prefix backend",
+    "frontend": "npm run build --prefix frontend"
+  }
+}
