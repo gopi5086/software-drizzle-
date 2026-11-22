@@ -35,14 +35,15 @@ const LoginPage: React.FC = () => {
       setSlowServerHint(false);
       
       const serverMessage = err.response?.data?.message;
+      const targetUrl = api.defaults.baseURL || '';
       let errorMsg = 'Invalid credentials or server error';
 
       if (serverMessage) {
         errorMsg = serverMessage;
       } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-        errorMsg = 'Server response timed out. Render backend may still be waking up. Please try again.';
+        errorMsg = `Server response timed out connecting to backend. Free server may still be waking up. Please try again.`;
       } else if (err.message === 'Network Error' || !err.response) {
-        errorMsg = 'Cannot reach backend server. Please verify Render backend is active and VITE_API_URL is configured on Vercel.';
+        errorMsg = `Cannot connect to backend (${targetUrl}). Network error.`;
       }
 
       toast.error(errorMsg);

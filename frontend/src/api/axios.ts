@@ -1,19 +1,11 @@
 import axios from 'axios';
 
-// Smart Base URL resolution:
-// 1. If VITE_API_URL is specified, use it
-// 2. In browser on custom domain (Hostinger, etc.), use relative '/api'
-// 3. If on Vercel without custom URL, use Render fallback
-// 4. In local development, use 'http://localhost:5000/api'
+// Production base URL defaults to the active cloud backend
 let rawURL = (import.meta.env.VITE_API_URL || '').trim();
 
 if (!rawURL) {
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    if (window.location.hostname.includes('vercel.app')) {
-      rawURL = 'https://software-drizzle.onrender.com/api';
-    } else {
-      rawURL = '/api'; // Hostinger direct hosting (same domain)
-    }
+    rawURL = 'https://software-drizzle.onrender.com/api';
   } else {
     rawURL = 'http://localhost:5000/api';
   }
