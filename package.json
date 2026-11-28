@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "start": "node index.js",
-    "build": "npm run build --prefix frontend && npm run build --prefix backend",
+    "build": "npm install --prefix frontend && npm run build --prefix frontend",
     "backend": "npm start --prefix backend",
     "frontend": "npm run build --prefix frontend"
   },

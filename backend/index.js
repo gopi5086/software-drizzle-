@@ -57,11 +57,11 @@ app.use('/api/staff', require('./routes/staffRoutes'));
 
 // Serve static frontend if present (for single-server hosting on Hostinger / VPS)
 const possibleStaticPaths = [
+  path.join(__dirname, '../frontend/dist'),
+  path.join(process.cwd(), 'frontend/dist'),
   path.join(__dirname, '../public_html'),
   path.join(__dirname, 'public_html'),
   path.join(process.cwd(), 'public_html'),
-  path.join(__dirname, '../frontend/dist'),
-  path.join(process.cwd(), 'frontend/dist'),
 ];
 const staticPath = possibleStaticPaths.find(p => fs.existsSync(p));
 
