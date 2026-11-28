@@ -13,11 +13,11 @@ const isProduction = env === 'production' || !isWindows;
 // On Local Machine (Windows / Development): default to local MySQL credentials
 const defaultDbConfig = (!isWindows || isProduction)
   ? {
-      host: 'srv679.hstgr.io',
+      host: '127.0.0.1',
       port: 3306,
       database: 'u853918251_drizzled',
       user: 'u853918251_Drizzle',
-      password: 'Drizzledrop@123',
+      password: 'Drizzledropinn@123',
     }
   : {
       host: 'localhost',
@@ -109,24 +109,29 @@ const initDB = async () => {
   } catch (error) {
     console.warn(`⚠️ Primary DB connection failed (${error.code || error.message}) with host '${dbConfig.host}'`);
 
-    // Candidate hosts to try on Hostinger: srv679.hstgr.io, 127.0.0.1, localhost
-    const candidateHosts = ['srv679.hstgr.io', '127.0.0.1', 'localhost'].filter(h => h !== dbConfig.host);
+    // Variations to try on Hostinger: alternative hosts and alternative passwords
+    const candidateHosts = ['127.0.0.1', 'localhost', 'srv679.hstgr.io'].filter(h => h !== dbConfig.host);
+    const candidatePasswords = ['Drizzledropinn@123', 'Drizzledrop@123'];
     let fallbackSucceeded = false;
 
+    // Try alternative hosts
     for (const altHost of candidateHosts) {
-      try {
-        console.log(`🔄 Attempting alternate host '${altHost}' for user '${dbConfig.user}'...`);
-        const altConfig = { ...dbConfig, host: altHost };
-        const altPool = createPoolInstance(altConfig);
-        connection = await altPool.getConnection();
-        activePool = altPool;
-        dbConfig = altConfig;
-        fallbackSucceeded = true;
-        console.log(`✅ Connected successfully using alternate host '${altHost}'!`);
-        break;
-      } catch (altErr) {
-        console.warn(`⚠️ Alternate host '${altHost}' failed: ${altErr.message}`);
+      for (const altPass of candidatePasswords) {
+        try {
+          console.log(`🔄 Attempting host '${altHost}' for user '${dbConfig.user}'...`);
+          const altConfig = { ...dbConfig, host: altHost, password: altPass };
+          const altPool = createPoolInstance(altConfig);
+          connection = await altPool.getConnection();
+          activePool = altPool;
+          dbConfig = altConfig;
+          fallbackSucceeded = true;
+          console.log(`✅ Connected successfully using host '${altHost}'!`);
+          break;
+        } catch (altErr) {
+          // Continue to next combination
+        }
       }
+      if (fallbackSucceeded) break;
     }
 
     if (!fallbackSucceeded) {
