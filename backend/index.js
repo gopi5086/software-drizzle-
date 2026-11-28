@@ -59,7 +59,9 @@ app.use('/api/staff', require('./routes/staffRoutes'));
 const possibleStaticPaths = [
   path.join(__dirname, '../public_html'),
   path.join(__dirname, 'public_html'),
+  path.join(process.cwd(), 'public_html'),
   path.join(__dirname, '../frontend/dist'),
+  path.join(process.cwd(), 'frontend/dist'),
 ];
 const staticPath = possibleStaticPaths.find(p => fs.existsSync(p));
 
