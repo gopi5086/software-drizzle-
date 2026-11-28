@@ -13,11 +13,11 @@ const isProduction = env === 'production' || !isWindows;
 // On Local Machine (Windows / Development): default to local MySQL credentials
 const defaultDbConfig = (!isWindows || isProduction)
   ? {
-      host: '127.0.0.1',
+      host: 'srv679.hstgr.io',
       port: 3306,
       database: 'u853918251_drizzled',
       user: 'u853918251_Drizzle',
-      password: 'Drizzledropinn@123',
+      password: 'Drizzledrop@123',
     }
   : {
       host: 'localhost',
@@ -109,21 +109,24 @@ const initDB = async () => {
   } catch (error) {
     console.warn(`⚠️ Primary DB connection failed (${error.code || error.message}) with host '${dbConfig.host}'`);
 
-    // Alternate between 127.0.0.1 and localhost (Hostinger socket vs TCP)
-    const altHost = dbConfig.host === '127.0.0.1' ? 'localhost' : '127.0.0.1';
+    // Candidate hosts to try on Hostinger: srv679.hstgr.io, 127.0.0.1, localhost
+    const candidateHosts = ['srv679.hstgr.io', '127.0.0.1', 'localhost'].filter(h => h !== dbConfig.host);
     let fallbackSucceeded = false;
 
-    try {
-      console.log(`🔄 Attempting alternate host '${altHost}' for user '${dbConfig.user}'...`);
-      const altConfig = { ...dbConfig, host: altHost };
-      const altPool = createPoolInstance(altConfig);
-      connection = await altPool.getConnection();
-      activePool = altPool;
-      dbConfig = altConfig;
-      fallbackSucceeded = true;
-      console.log(`✅ Connected successfully using alternate host '${altHost}'!`);
-    } catch (altErr) {
-      console.warn(`⚠️ Alternate host '${altHost}' also failed: ${altErr.message}`);
+    for (const altHost of candidateHosts) {
+      try {
+        console.log(`🔄 Attempting alternate host '${altHost}' for user '${dbConfig.user}'...`);
+        const altConfig = { ...dbConfig, host: altHost };
+        const altPool = createPoolInstance(altConfig);
+        connection = await altPool.getConnection();
+        activePool = altPool;
+        dbConfig = altConfig;
+        fallbackSucceeded = true;
+        console.log(`✅ Connected successfully using alternate host '${altHost}'!`);
+        break;
+      } catch (altErr) {
+        console.warn(`⚠️ Alternate host '${altHost}' failed: ${altErr.message}`);
+      }
     }
 
     if (!fallbackSucceeded) {
@@ -334,6 +337,3 @@ const initDB = async () => {
 };
 
 module.exports = { pool, initDB };
-
-
-
