@@ -82,4 +82,15 @@ if (staticPath) {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+
+  // Write active port to a file so the PHP bridge can discover it
+  const portFilePaths = [
+    path.join(__dirname, '../public_html/.node_port'),
+    path.join(process.cwd(), 'public_html/.node_port'),
+    path.join(__dirname, '../.node_port'),
+    path.join(process.cwd(), '.node_port'),
+  ];
+  portFilePaths.forEach(p => {
+    try { fs.writeFileSync(p, String(PORT)); } catch (_) {}
+  });
 });

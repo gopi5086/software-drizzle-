@@ -1,6 +1,12 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteBase /api/
+
+    # Route ALL requests in /api/ to index.php (the PHP bridge to Node.js)
+    # Do NOT check for existing files - let index.php handle everything
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
+
+# Disable directory listing
+Options -Indexes

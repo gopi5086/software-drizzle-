@@ -2,17 +2,16 @@
     RewriteEngine On
     RewriteBase /
 
-    # 1. Do not touch or rewrite any API routes - let Node.js handle them
-    RewriteRule ^api/ - [L]
-    RewriteRule ^api$ - [L]
-
-    # 2. Serve static assets if they exist directly
+    # 1. Serve real static files/directories directly (css, js, images, fonts)
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # 3. Client-side React SPA fallback
-    RewriteRule ^index\.html$ - [L]
+    # 2. Route all /api/* requests to the PHP bridge (public_html/api/index.php)
+    #    This bridges to the Node.js backend running locally on Hostinger
+    RewriteRule ^api(/.*)?$ api/index.php [QSA,L]
+
+    # 3. SPA fallback - all other non-file routes go to index.html (React Router)
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule . /index.html [L]
