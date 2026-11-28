@@ -1,15 +1,19 @@
-Options -MultiViews
-RewriteEngine On
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
 
-# 1. Forward all /api requests to the Node.js backend on port 5000
-RewriteCond %{REQUEST_URI} ^/api [NC]
-RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
-RewriteRule ^api$ http://127.0.0.1:5000/api/ [P,L]
+    # 1. Do not touch or rewrite any API routes - let Node.js handle them
+    RewriteRule ^api/ - [L]
+    RewriteRule ^api$ - [L]
 
-# 2. Serve static assets if they exist
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
+    # 2. Serve static assets if they exist directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
 
-# 3. For any other client-side React routes, serve index.html
-RewriteRule ^ index.html [QSA,L]
+    # 3. Client-side React SPA fallback
+    RewriteRule ^index\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+</IfModule>
