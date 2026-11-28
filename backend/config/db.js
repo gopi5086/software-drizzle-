@@ -27,8 +27,10 @@ const defaultDbConfig = (!isWindows || isProduction)
       password: 'Gopinath@10',
     };
 
-// Check if user set custom env vars
-const rawHost = (process.env.DB_HOST || defaultDbConfig.host).trim();
+// Check if user set custom env vars (ignore dead/expired Aiven cloud hosts)
+const rawEnvHost = (process.env.DB_HOST || '').trim();
+const isDeadAiven = rawEnvHost.includes('aivencloud.com');
+const rawHost = (isDeadAiven || !rawEnvHost) ? defaultDbConfig.host : rawEnvHost;
 const isLocalHost = !rawHost || rawHost === 'localhost' || rawHost === '127.0.0.1';
 const isHostingerUser = (process.env.DB_USER || '').startsWith('u853918251_');
 
