@@ -18,9 +18,10 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    const jwtSecret = process.env.JWT_SECRET || 'super_secret_drizzle_drop_key_2026';
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: '24h' }
     );
 

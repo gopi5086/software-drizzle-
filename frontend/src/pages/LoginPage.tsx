@@ -34,14 +34,19 @@ const LoginPage: React.FC = () => {
       clearTimeout(timer);
       setSlowServerHint(false);
       
-      const serverMessage = err.response?.data?.message;
       const targetUrl = api.defaults.baseURL || '';
-      let errorMsg = 'Invalid credentials or server error';
+      let errorMsg = 'Invalid credentials';
 
-      if (serverMessage) {
-        errorMsg = serverMessage;
+      if (typeof err.response?.data?.message === 'string') {
+        errorMsg = err.response.data.message;
+      } else if (typeof err.response?.data?.detail === 'string') {
+        errorMsg = err.response.data.detail;
+      } else if (typeof err.response?.data === 'string' && err.response.data.length < 200 && !err.response.data.includes('<!DOCTYPE')) {
+        errorMsg = err.response.data;
+      } else if (err.response?.status) {
+        errorMsg = `Server returned HTTP ${err.response.status} (${err.response.statusText || 'Error'})`;
       } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-        errorMsg = `Server response timed out connecting to backend. Free server may still be waking up. Please try again.`;
+        errorMsg = `Server response timed out connecting to backend. Please try again.`;
       } else if (err.message === 'Network Error' || !err.response) {
         errorMsg = `Cannot connect to backend (${targetUrl}). Network error.`;
       }

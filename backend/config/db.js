@@ -293,16 +293,35 @@ const initDB = async () => {
       );
     } catch (e) { /* ignore */ }
 
-    // ── Seed default admin if not exists ──────────────────────────────
+    // ── Seed / sync default admin accounts ────────────────────────────
     const bcrypt = require('bcryptjs');
-    const [adminRows] = await connection.query('SELECT id FROM users WHERE email = ?', ['admin12@gmail.com']);
-    if (adminRows.length === 0) {
-      const hashedPassword = await bcrypt.hash('admin@123', 10);
+    const defaultPassword1 = await bcrypt.hash('admin@123', 10);
+    const defaultPassword2 = await bcrypt.hash('admin123', 10);
+
+    // Primary Admin: admin12@gmail.com / admin@123
+    const [admin1] = await connection.query('SELECT id FROM users WHERE email = ?', ['admin12@gmail.com']);
+    if (admin1.length === 0) {
       await connection.query(
         'INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)',
-        ['Admin', 'admin12@gmail.com', hashedPassword, 'admin']
+        ['Admin', 'admin12@gmail.com', defaultPassword1, 'admin']
       );
-      console.log('✅ Default admin created: admin12@gmail.com / admin@123');
+      console.log('✅ Primary admin created: admin12@gmail.com / admin@123');
+    } else {
+      await connection.query('UPDATE users SET password = ?, role = "admin" WHERE email = ?', [defaultPassword1, 'admin12@gmail.com']);
+      console.log('✅ Primary admin password verified: admin12@gmail.com / admin@123');
+    }
+
+    // Secondary Admin: admin@drizzledrop.com / admin123
+    const [admin2] = await connection.query('SELECT id FROM users WHERE email = ?', ['admin@drizzledrop.com']);
+    if (admin2.length === 0) {
+      await connection.query(
+        'INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)',
+        ['Drizzle Admin', 'admin@drizzledrop.com', defaultPassword2, 'admin']
+      );
+      console.log('✅ Secondary admin created: admin@drizzledrop.com / admin123');
+    } else {
+      await connection.query('UPDATE users SET password = ?, role = "admin" WHERE email = ?', [defaultPassword2, 'admin@drizzledrop.com']);
+      console.log('✅ Secondary admin password verified: admin@drizzledrop.com / admin123');
     }
 
     connection.release();
