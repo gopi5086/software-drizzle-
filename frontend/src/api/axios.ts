@@ -5,7 +5,7 @@ let rawURL = (import.meta.env.VITE_API_URL || '').trim();
 
 if (!rawURL) {
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    rawURL = 'https://software-drizzle.onrender.com/api';
+    rawURL = '/api';
   } else {
     rawURL = 'http://localhost:5000/api';
   }
