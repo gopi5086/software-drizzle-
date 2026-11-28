@@ -5,22 +5,39 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 require('dotenv').config();
 
 const env = process.env.NODE_ENV || 'development';
-const isProduction = env === 'production';
 const isWindows = process.platform === 'win32';
+const isProduction = env === 'production' || !isWindows;
 
-// Check if configured host is localhost
-const rawHost = (process.env.DB_HOST || 'localhost').trim();
+// Determine default credentials based on environment:
+// On Hostinger (Linux / Production): default to Hostinger database credentials
+// On Local Machine (Windows / Development): default to local MySQL credentials
+const defaultDbConfig = (!isWindows || isProduction)
+  ? {
+      host: '127.0.0.1',
+      port: 3306,
+      database: 'u853918251_drizzled',
+      user: 'u853918251_Drizzle',
+      password: 'Drizzledropinn@123',
+    }
+  : {
+      host: 'localhost',
+      port: 3306,
+      database: 'dazzle_drop',
+      user: 'root',
+      password: 'Gopinath@10',
+    };
+
+// Check if user set custom env vars
+const rawHost = (process.env.DB_HOST || defaultDbConfig.host).trim();
 const isLocalHost = !rawHost || rawHost === 'localhost' || rawHost === '127.0.0.1';
-
-// Detect if Hostinger user is configured while running on local Windows
 const isHostingerUser = (process.env.DB_USER || '').startsWith('u853918251_');
 
 let dbConfig = {
   host: rawHost,
-  user: (process.env.DB_USER || 'root').trim(),
-  password: process.env.DB_PASSWORD || '',
-  database: (process.env.DB_NAME || 'dazzle_drop').trim(),
-  port: Number(process.env.DB_PORT) || 3306,
+  user: (process.env.DB_USER || defaultDbConfig.user).trim(),
+  password: process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : defaultDbConfig.password,
+  database: (process.env.DB_NAME || defaultDbConfig.database).trim(),
+  port: Number(process.env.DB_PORT) || defaultDbConfig.port,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -57,6 +74,7 @@ if (sslOption) {
 
 console.log('🔎 DB Config Loaded:', {
   env,
+  isProduction,
   host: dbConfig.host,
   port: dbConfig.port,
   user: dbConfig.user,
@@ -87,40 +105,55 @@ const initDB = async () => {
   try {
     connection = await activePool.getConnection();
   } catch (error) {
-    // If access was denied on localhost, attempt fallback to local root credentials
-    if (error.code === 'ER_ACCESS_DENIED_ERROR' && isLocalHost) {
-      console.warn(`⚠️ Access denied for user '${dbConfig.user}' on localhost.`);
-      console.log('🔄 Attempting fallback to local root credentials (root / dazzle_drop)...');
-      try {
-        const fallbackConfig = {
-          host: 'localhost',
-          user: 'root',
-          password: process.env.LOCAL_DB_PASSWORD || 'Gopinath@10',
-          database: 'dazzle_drop',
-          port: 3306,
-          waitForConnections: true,
-          connectionLimit: 10,
-          queueLimit: 0,
-        };
-        const fallbackPool = createPoolInstance(fallbackConfig);
-        connection = await fallbackPool.getConnection();
-        activePool = fallbackPool;
-        dbConfig = fallbackConfig;
-        console.log('✅ Connected via fallback credentials (root / dazzle_drop)');
-      } catch (fbErr) {
-        console.error('❌ Local fallback connection also failed:', fbErr.message);
+    console.warn(`⚠️ Primary DB connection failed (${error.code || error.message}) with host '${dbConfig.host}'`);
+
+    // Alternate between 127.0.0.1 and localhost (Hostinger socket vs TCP)
+    const altHost = dbConfig.host === '127.0.0.1' ? 'localhost' : '127.0.0.1';
+    let fallbackSucceeded = false;
+
+    try {
+      console.log(`🔄 Attempting alternate host '${altHost}' for user '${dbConfig.user}'...`);
+      const altConfig = { ...dbConfig, host: altHost };
+      const altPool = createPoolInstance(altConfig);
+      connection = await altPool.getConnection();
+      activePool = altPool;
+      dbConfig = altConfig;
+      fallbackSucceeded = true;
+      console.log(`✅ Connected successfully using alternate host '${altHost}'!`);
+    } catch (altErr) {
+      console.warn(`⚠️ Alternate host '${altHost}' also failed: ${altErr.message}`);
+    }
+
+    if (!fallbackSucceeded) {
+      // If on local Windows and access denied, attempt local root fallback
+      if (isWindows) {
+        console.log('🔄 Attempting local root credentials (root / dazzle_drop)...');
+        try {
+          const rootConfig = {
+            host: 'localhost',
+            user: 'root',
+            password: process.env.LOCAL_DB_PASSWORD || 'Gopinath@10',
+            database: 'dazzle_drop',
+            port: 3306,
+            waitForConnections: true,
+            connectionLimit: 10,
+            queueLimit: 0,
+          };
+          const rootPool = createPoolInstance(rootConfig);
+          connection = await rootPool.getConnection();
+          activePool = rootPool;
+          dbConfig = rootConfig;
+          fallbackSucceeded = true;
+          console.log('✅ Connected via local root credentials!');
+        } catch (rootErr) {
+          console.error('❌ Local fallback also failed:', rootErr.message);
+        }
+      }
+
+      if (!fallbackSucceeded) {
+        console.error('❌ Database Initialization Error:', error.message);
         return;
       }
-    } else {
-      console.error('❌ Database Initialization Error:', error.message);
-      if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-        console.error('  → Check DB_USER and DB_PASSWORD in your .env file');
-      } else if (error.code === 'ER_BAD_DB_ERROR') {
-        console.error('  → Database does not exist. Create it first: CREATE DATABASE ' + dbConfig.database);
-      } else if (error.code === 'ECONNREFUSED') {
-        console.error('  → MySQL server is not running or DB_HOST/DB_PORT is wrong');
-      }
-      return;
     }
   }
 

@@ -34,9 +34,12 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
-      console.error('❌ Login failed - database unreachable:', error.code, error.message);
-      return res.status(503).json({ message: 'Database temporarily unavailable. Please try again shortly.' });
+    console.error('❌ Login error:', error.code, error.message);
+    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.code === 'ER_ACCESS_DENIED_ERROR') {
+      return res.status(503).json({ 
+        message: 'Database temporarily unavailable. Please try again shortly.',
+        detail: error.message
+      });
     }
     res.status(500).json({ message: error.message });
   }
